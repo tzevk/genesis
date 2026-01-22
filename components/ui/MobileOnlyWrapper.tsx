@@ -104,7 +104,7 @@ export function MobileOnlyWrapper({ children }: MobileOnlyWrapperProps) {
             className="text-base mb-8 leading-relaxed"
             style={{ color: "rgba(255, 255, 255, 0.7)" }}
           >
-            Genesis EPC Training is designed exclusively for mobile devices. 
+            Genesis is designed exclusively for mobile devices. 
             Please open this app on your phone to continue.
           </p>
 
