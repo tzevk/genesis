@@ -105,11 +105,11 @@ export default function SectorWheelPage() {
 
     setRotation(totalRotation);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setSelectedSector(SECTORS[sectorIndex].name);
       setIsSpinning(false);
       setShowResult(true);
-      updateUserSector(SECTORS[sectorIndex].name);
+      await updateUserSector(SECTORS[sectorIndex].name);
     }, ANIMATION.wheelSpinDuration);
   }, [isSpinning, rotation]);
 

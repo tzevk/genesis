@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { EDUCATION_LEVELS } from "@/lib/constants";
-import { validateLoginForm, saveUserData } from "@/lib/utils";
+import { validateLoginForm, loginUser } from "@/lib/utils";
 import { FormErrors } from "@/lib/types";
 import { InputField } from "@/components/ui/InputField";
 import { SelectField } from "@/components/ui/SelectField";
@@ -32,11 +32,18 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
     }
 
     setIsLoading(true);
-    saveUserData(formData);
-
-    // Trigger simulation launch transition
-    if (onStartSimulation) {
-      onStartSimulation();
+    
+    try {
+      await loginUser(formData);
+      
+      // Trigger simulation launch transition
+      if (onStartSimulation) {
+        onStartSimulation();
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      setErrors({ name: "Login failed. Please try again." });
+      setIsLoading(false);
     }
   };
 

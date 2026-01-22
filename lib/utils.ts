@@ -3,24 +3,68 @@ import { UserData, FormErrors } from "./types";
 // Local storage keys
 const USER_STORAGE_KEY = "genesisUser";
 
-// User data management
+// API-based user login
+export const loginUser = async (data: Omit<UserData, "sector">): Promise<UserData & { id: string }> => {
+  const response = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Login failed");
+  }
+
+  const result = await response.json();
+  
+  // Also save to localStorage for client-side access
+  const userData = result.user;
+  if (typeof window !== "undefined") {
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+  }
+  
+  return userData;
+};
+
+// User data management (localStorage for quick client access)
 export const saveUserData = (data: UserData): void => {
   if (typeof window !== "undefined") {
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data));
   }
 };
 
-export const getUserData = (): UserData | null => {
+export const getUserData = (): (UserData & { id?: string }) | null => {
   if (typeof window === "undefined") return null;
   const data = localStorage.getItem(USER_STORAGE_KEY);
   return data ? JSON.parse(data) : null;
 };
 
-export const updateUserSector = (sector: string): void => {
+export const updateUserSector = async (sector: string): Promise<void> => {
   const userData = getUserData();
   if (userData) {
+    // Update localStorage immediately for UI
     userData.sector = sector;
     saveUserData(userData);
+    
+    // Update in database if user has an ID
+    if (userData.id) {
+      try {
+        await fetch("/api/user/sector", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: userData.id, sector }),
+        });
+      } catch (error) {
+        console.error("Failed to update sector in database:", error);
+      }
+    }
+  }
+};
+
+export const clearUserData = (): void => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(USER_STORAGE_KEY);
   }
 };
 
