@@ -2,12 +2,10 @@ import { Sector } from "./types";
 
 // Education levels for registration
 export const EDUCATION_LEVELS = [
-  "High School",
+  "HSC",
   "Diploma",
-  "Bachelor's Degree",
-  "Master's Degree",
-  "PhD",
-  "Professional Certification",
+  "Graduate",
+  "Others",
 ] as const;
 
 // EPC Sectors with brand colors

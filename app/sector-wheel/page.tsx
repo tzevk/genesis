@@ -11,7 +11,152 @@ import {
   BlinkDetector,
 } from "@/components";
 
-type PagePhase = "intro" | "invitation" | "wheel";
+// Background component matching splash/login screens
+function WaveBackground() {
+  return (
+    <div className="absolute inset-0 z-0 overflow-hidden">
+      {/* Base gradient */}
+      <div 
+        className="absolute inset-0"
+        style={{ background: "#2A6BB5" }}
+      />
+      
+      {/* Subtle grid pattern */}
+      <div 
+        className="absolute inset-0 opacity-[0.08]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)
+          `,
+          backgroundSize: "60px 60px",
+        }}
+      />
+      
+      {/* Blueprint circles */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.1]" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="circles" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+            <circle cx="100" cy="100" r="80" fill="none" stroke="white" strokeWidth="0.5" />
+            <circle cx="100" cy="100" r="60" fill="none" stroke="white" strokeWidth="0.5" strokeDasharray="4 4" />
+            <circle cx="100" cy="100" r="40" fill="none" stroke="white" strokeWidth="0.5" />
+            <circle cx="100" cy="100" r="3" fill="white" />
+            <line x1="20" y1="100" x2="180" y2="100" stroke="white" strokeWidth="0.3" />
+            <line x1="100" y1="20" x2="100" y2="180" stroke="white" strokeWidth="0.3" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#circles)" />
+      </svg>
+      
+      {/* Floating gear outlines */}
+      <motion.svg 
+        className="absolute opacity-[0.12]" 
+        style={{ top: "15%", right: "10%", width: "120px", height: "120px" }}
+        viewBox="0 0 100 100"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+      >
+        <path 
+          d="M50 20 L53 30 L60 28 L58 38 L68 42 L62 50 L68 58 L58 62 L60 72 L53 70 L50 80 L47 70 L40 72 L42 62 L32 58 L38 50 L32 42 L42 38 L40 28 L47 30 Z" 
+          fill="none" 
+          stroke="white" 
+          strokeWidth="1"
+        />
+        <circle cx="50" cy="50" r="15" fill="none" stroke="white" strokeWidth="1" />
+      </motion.svg>
+      
+      <motion.svg 
+        className="absolute opacity-[0.1]" 
+        style={{ bottom: "20%", left: "8%", width: "80px", height: "80px" }}
+        viewBox="0 0 100 100"
+        animate={{ rotate: -360 }}
+        transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
+      >
+        <path 
+          d="M50 15 L54 28 L65 24 L62 37 L75 43 L65 50 L75 57 L62 63 L65 76 L54 72 L50 85 L46 72 L35 76 L38 63 L25 57 L35 50 L25 43 L38 37 L35 24 L46 28 Z" 
+          fill="none" 
+          stroke="white" 
+          strokeWidth="0.8"
+        />
+        <circle cx="50" cy="50" r="12" fill="none" stroke="white" strokeWidth="0.8" />
+      </motion.svg>
+      
+      {/* Technical measurement marks */}
+      <div className="absolute top-0 left-0 right-0 h-8 opacity-[0.12] flex justify-around items-end">
+        {[...Array(20)].map((_, i) => (
+          <div key={i} className="w-px bg-white" style={{ height: i % 5 === 0 ? "16px" : "8px" }} />
+        ))}
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 h-8 opacity-[0.12] flex justify-around items-start">
+        {[...Array(20)].map((_, i) => (
+          <div key={i} className="w-px bg-white" style={{ height: i % 5 === 0 ? "16px" : "8px" }} />
+        ))}
+      </div>
+      
+      {/* Corner brackets */}
+      <div className="absolute top-6 left-6 w-12 h-12 border-l-2 border-t-2 border-white opacity-[0.15]" />
+      <div className="absolute top-6 right-6 w-12 h-12 border-r-2 border-t-2 border-white opacity-[0.15]" />
+      <div className="absolute bottom-6 left-6 w-12 h-12 border-l-2 border-b-2 border-white opacity-[0.15]" />
+      <div className="absolute bottom-6 right-6 w-12 h-12 border-r-2 border-b-2 border-white opacity-[0.15]" />
+      
+      {/* Animated gradient waves */}
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          background: "radial-gradient(ellipse 100% 60% at 50% 100%, rgba(42, 107, 181, 0.6) 0%, transparent 60%)",
+        }}
+        animate={{
+          opacity: [0.4, 0.8, 0.4],
+        }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          background: "radial-gradient(ellipse 80% 50% at 10% 90%, rgba(42, 107, 181, 0.5) 0%, transparent 50%)",
+        }}
+        animate={{
+          opacity: [0.5, 0.3, 0.5],
+          x: [0, 50, 0],
+        }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          background: "radial-gradient(ellipse 90% 45% at 90% 85%, rgba(42, 107, 181, 0.5) 0%, transparent 50%)",
+        }}
+        animate={{
+          opacity: [0.3, 0.6, 0.3],
+          x: [0, -40, 0],
+        }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      />
+      
+      {/* Aurora effect - top */}
+      <motion.div
+        className="absolute inset-0"
+        style={{
+          background: "radial-gradient(ellipse 120% 30% at 50% -10%, rgba(42, 107, 181, 0.4) 0%, transparent 50%)",
+        }}
+        animate={{
+          opacity: [0.2, 0.4, 0.2],
+        }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+      />
+      
+      {/* Subtle vignette for depth */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse at center, transparent 30%, rgba(20, 20, 60, 0.4) 100%)",
+        }}
+      />
+    </div>
+  );
+}
+
+type PagePhase = "intro" | "wheel";
 
 export default function SectorWheelPage() {
   const router = useRouter();
@@ -78,13 +223,8 @@ export default function SectorWheelPage() {
     return () => clearTimeout(startDelay);
   }, [phase]);
 
-  // Transition to invitation phase
-  const handleContinue = () => {
-    setPhase("invitation");
-  };
-
   // Transition to wheel phase
-  const handleShowWheel = () => {
+  const handleContinue = () => {
     setPhase("wheel");
   };
 
@@ -118,116 +258,18 @@ export default function SectorWheelPage() {
   };
 
   return (
-    <AnimatePresence mode="wait">
+    <>
+      <AnimatePresence mode="wait">
       {/* INTRO PHASE - Statement */}
       {phase === "intro" && (
         <motion.div
           key="intro"
           className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden cursor-pointer"
-          style={{ backgroundColor: "#0a4d8c" }}
           onClick={showContinue ? handleContinue : undefined}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8 }}
         >
-          {/* Blueprint paper texture overlay */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-30"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-            }}
-          />
-
-          {/* Blueprint grid using SVG */}
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Fine grid lines (3px spacing) */}
-            {Array.from({ length: 700 }).map((_, i) => (
-              <line
-                key={`fh-${i}`}
-                x1="0"
-                y1={i * 3}
-                x2="100%"
-                y2={i * 3}
-                stroke="#FAE452"
-                strokeWidth="0.2"
-                strokeOpacity="0.15"
-              />
-            ))}
-            {Array.from({ length: 1000 }).map((_, i) => (
-              <line
-                key={`fv-${i}`}
-                x1={i * 3}
-                y1="0"
-                x2={i * 3}
-                y2="100%"
-                stroke="#FAE452"
-                strokeWidth="0.2"
-                strokeOpacity="0.15"
-              />
-            ))}
-            
-            {/* Medium grid lines (15px spacing) */}
-            {Array.from({ length: 140 }).map((_, i) => (
-              <line
-                key={`mh-${i}`}
-                x1="0"
-                y1={i * 15}
-                x2="100%"
-                y2={i * 15}
-                stroke="#FAE452"
-                strokeWidth="0.4"
-                strokeOpacity="0.25"
-              />
-            ))}
-            {Array.from({ length: 200 }).map((_, i) => (
-              <line
-                key={`mv-${i}`}
-                x1={i * 15}
-                y1="0"
-                x2={i * 15}
-                y2="100%"
-                stroke="#FAE452"
-                strokeWidth="0.4"
-                strokeOpacity="0.25"
-              />
-            ))}
-            
-            {/* Main grid lines (30px spacing) */}
-            {Array.from({ length: 70 }).map((_, i) => (
-              <line
-                key={`h-${i}`}
-                x1="0"
-                y1={i * 30}
-                x2="100%"
-                y2={i * 30}
-                stroke="#FAE452"
-                strokeWidth="0.8"
-                strokeOpacity="0.4"
-              />
-            ))}
-            {Array.from({ length: 100 }).map((_, i) => (
-              <line
-                key={`v-${i}`}
-                x1={i * 30}
-                y1="0"
-                x2={i * 30}
-                y2="100%"
-                stroke="#FAE452"
-                strokeWidth="0.8"
-                strokeOpacity="0.4"
-              />
-            ))}
-          </svg>
-
-          {/* Vignette */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: "radial-gradient(ellipse at center, transparent 40%, rgba(20, 20, 60, 0.6) 100%)",
-            }}
-          />
+          <WaveBackground />
 
           {/* Statement text */}
           <motion.div
@@ -237,10 +279,12 @@ export default function SectorWheelPage() {
             transition={{ duration: 0.3 }}
           >
             <h1
-              className="text-2xl md:text-4xl font-light whitespace-nowrap"
+              className="text-2xl md:text-4xl tracking-tight"
               style={{ 
                 color: "#ffffff",
-                fontFamily: "system-ui, -apple-system, sans-serif",
+                fontWeight: 600,
+                letterSpacing: "-0.03em",
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif",
               }}
             >
               {displayText}
@@ -259,7 +303,12 @@ export default function SectorWheelPage() {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.8 }}
                 >
-                  {" "}<span style={{ color: "#FAE452", fontWeight: 500 }}>choice</span>.
+                  {" "}<span style={{ color: "#FAE452", fontWeight: 600 }}>choice</span>
+                  <motion.span
+                    animate={{ opacity: [1, 0, 1] }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                    style={{ color: "#FAE452" }}
+                  >.</motion.span>
                 </motion.span>
               )}
             </h1>
@@ -267,20 +316,20 @@ export default function SectorWheelPage() {
             {/* Sectors list */}
             {showSectors && (
               <motion.p
-                className="mt-6 text-lg md:text-xl font-light tracking-wide"
+                className="mt-8 text-lg md:text-xl font-light tracking-wide"
                 style={{ color: "rgba(255, 255, 255, 0.7)" }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1 }}
               >
                 <span style={{ color: "#FAE452" }}>Process</span>
-                <span style={{ color: "rgba(255, 255, 255, 0.4)" }}> · </span>
+                <span style={{ color: "rgba(255, 255, 255, 0.3)" }}> · </span>
                 <span style={{ color: "#FAE452" }}>Electrical</span>
-                <span style={{ color: "rgba(255, 255, 255, 0.4)" }}> · </span>
+                <span style={{ color: "rgba(255, 255, 255, 0.3)" }}> · </span>
                 <span style={{ color: "#FAE452" }}>HVAC</span>
-                <span style={{ color: "rgba(255, 255, 255, 0.4)" }}> · </span>
+                <span style={{ color: "rgba(255, 255, 255, 0.3)" }}> · </span>
                 <span style={{ color: "#FAE452" }}>Oil & Gas</span>
-                <span style={{ color: "rgba(255, 255, 255, 0.4)" }}> · </span>
+                <span style={{ color: "rgba(255, 255, 255, 0.3)" }}> · </span>
                 <span style={{ color: "#FAE452" }}>MEP</span>
               </motion.p>
             )}
@@ -300,171 +349,42 @@ export default function SectorWheelPage() {
 
             {/* Tap to continue */}
             {showContinue && (
-              <motion.p
-                className="mt-12 text-sm tracking-wider"
-                style={{ color: "rgba(250, 228, 82, 0.6)" }}
+              <motion.div
+                className="mt-12 flex flex-col items-center gap-2"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: [0.4, 0.8, 0.4] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
               >
-                TAP TO CONTINUE
-              </motion.p>
+                <motion.div
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <svg 
+                    width="24" 
+                    height="24" 
+                    viewBox="0 0 24 24" 
+                    fill="none"
+                    style={{ opacity: 0.5 }}
+                  >
+                    <path 
+                      d="M18 15L12 9L6 15" 
+                      stroke="#FAE452" 
+                      strokeWidth="1.5" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </motion.div>
+                <motion.p
+                  className="text-xs tracking-widest"
+                  style={{ color: "rgba(250, 228, 82, 0.5)" }}
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  Tap anywhere to continue
+                </motion.p>
+              </motion.div>
             )}
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* INVITATION PHASE */}
-      {phase === "invitation" && (
-        <motion.div
-          key="invitation"
-          className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden cursor-pointer"
-          style={{ backgroundColor: "#0a4d8c" }}
-          onClick={handleShowWheel}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          {/* Blueprint paper texture overlay */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-30"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-            }}
-          />
-
-          {/* Blueprint grid using SVG */}
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Fine grid lines (3px spacing) */}
-            {Array.from({ length: 700 }).map((_, i) => (
-              <line
-                key={`inv-fh-${i}`}
-                x1="0"
-                y1={i * 3}
-                x2="100%"
-                y2={i * 3}
-                stroke="#FAE452"
-                strokeWidth="0.2"
-                strokeOpacity="0.15"
-              />
-            ))}
-            {Array.from({ length: 1000 }).map((_, i) => (
-              <line
-                key={`inv-fv-${i}`}
-                x1={i * 3}
-                y1="0"
-                x2={i * 3}
-                y2="100%"
-                stroke="#FAE452"
-                strokeWidth="0.2"
-                strokeOpacity="0.15"
-              />
-            ))}
-            
-            {/* Medium grid lines (15px spacing) */}
-            {Array.from({ length: 140 }).map((_, i) => (
-              <line
-                key={`inv-mh-${i}`}
-                x1="0"
-                y1={i * 15}
-                x2="100%"
-                y2={i * 15}
-                stroke="#FAE452"
-                strokeWidth="0.4"
-                strokeOpacity="0.25"
-              />
-            ))}
-            {Array.from({ length: 200 }).map((_, i) => (
-              <line
-                key={`inv-mv-${i}`}
-                x1={i * 15}
-                y1="0"
-                x2={i * 15}
-                y2="100%"
-                stroke="#FAE452"
-                strokeWidth="0.4"
-                strokeOpacity="0.25"
-              />
-            ))}
-            
-            {/* Main grid lines (30px spacing) */}
-            {Array.from({ length: 70 }).map((_, i) => (
-              <line
-                key={`inv-h-${i}`}
-                x1="0"
-                y1={i * 30}
-                x2="100%"
-                y2={i * 30}
-                stroke="#FAE452"
-                strokeWidth="0.8"
-                strokeOpacity="0.4"
-              />
-            ))}
-            {Array.from({ length: 100 }).map((_, i) => (
-              <line
-                key={`inv-v-${i}`}
-                x1={i * 30}
-                y1="0"
-                x2={i * 30}
-                y2="100%"
-                stroke="#FAE452"
-                strokeWidth="0.8"
-                strokeOpacity="0.4"
-              />
-            ))}
-          </svg>
-
-          {/* Vignette */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: "radial-gradient(ellipse at center, transparent 40%, rgba(5, 40, 80, 0.6) 100%)",
-            }}
-          />
-
-          {/* Invitation content */}
-          <motion.div
-            className="relative z-10 text-center px-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.3 }}
-          >
-            <motion.p
-              className="text-sm tracking-[0.3em] uppercase mb-4"
-              style={{ color: "rgba(250, 228, 82, 0.7)" }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-            >
-            </motion.p>
-            
-            <motion.h1
-              className="text-2xl md:text-4xl font-light"
-              style={{ 
-                color: "#ffffff",
-                fontFamily: "system-ui, -apple-system, sans-serif",
-              }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.8 }}
-            >
-              Discover where your journey begins.
-            </motion.h1>
-
-            {/* Tap to continue */}
-            <motion.p
-              className="mt-12 text-sm tracking-wider"
-              style={{ color: "rgba(250, 228, 82, 0.6)" }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0.4, 0.8, 0.4] }}
-              transition={{ duration: 2, delay: 1.5, repeat: Infinity }}
-            >
-              TAP TO CONTINUE
-            </motion.p>
           </motion.div>
         </motion.div>
       )}
@@ -474,102 +394,11 @@ export default function SectorWheelPage() {
         <motion.div
           key="wheel"
           className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
-          style={{ backgroundColor: "#0a4d8c" }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
-          {/* Blueprint grid background */}
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Fine grid lines (3px spacing) */}
-            {Array.from({ length: 700 }).map((_, i) => (
-              <line
-                key={`wh-fh-${i}`}
-                x1="0"
-                y1={i * 3}
-                x2="100%"
-                y2={i * 3}
-                stroke="#FAE452"
-                strokeWidth="0.2"
-                strokeOpacity="0.15"
-              />
-            ))}
-            {Array.from({ length: 1000 }).map((_, i) => (
-              <line
-                key={`wh-fv-${i}`}
-                x1={i * 3}
-                y1="0"
-                x2={i * 3}
-                y2="100%"
-                stroke="#FAE452"
-                strokeWidth="0.2"
-                strokeOpacity="0.15"
-              />
-            ))}
-            
-            {/* Medium grid lines (15px spacing) */}
-            {Array.from({ length: 140 }).map((_, i) => (
-              <line
-                key={`wh-mh-${i}`}
-                x1="0"
-                y1={i * 15}
-                x2="100%"
-                y2={i * 15}
-                stroke="#FAE452"
-                strokeWidth="0.4"
-                strokeOpacity="0.25"
-              />
-            ))}
-            {Array.from({ length: 200 }).map((_, i) => (
-              <line
-                key={`wh-mv-${i}`}
-                x1={i * 15}
-                y1="0"
-                x2={i * 15}
-                y2="100%"
-                stroke="#FAE452"
-                strokeWidth="0.4"
-                strokeOpacity="0.25"
-              />
-            ))}
-            
-            {/* Main grid lines (30px spacing) */}
-            {Array.from({ length: 70 }).map((_, i) => (
-              <line
-                key={`wh-h-${i}`}
-                x1="0"
-                y1={i * 30}
-                x2="100%"
-                y2={i * 30}
-                stroke="#FAE452"
-                strokeWidth="0.8"
-                strokeOpacity="0.4"
-              />
-            ))}
-            {Array.from({ length: 100 }).map((_, i) => (
-              <line
-                key={`wh-v-${i}`}
-                x1={i * 30}
-                y1="0"
-                x2={i * 30}
-                y2="100%"
-                stroke="#FAE452"
-                strokeWidth="0.8"
-                strokeOpacity="0.4"
-              />
-            ))}
-          </svg>
-
-          {/* Subtle vignette */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: "radial-gradient(ellipse at center, transparent 30%, rgba(5, 40, 80, 0.5) 100%)",
-            }}
-          />
+          <WaveBackground />
 
           <div className="relative z-10 text-center">
             {/* Header - hide after result */}
@@ -594,8 +423,13 @@ export default function SectorWheelPage() {
               >
                 {/* Sector name */}
                 <motion.h2
-                  className="text-3xl md:text-4xl font-light tracking-wide mb-2"
-                  style={{ color: "#FAE452" }}
+                  className="text-3xl md:text-4xl tracking-tight mb-2"
+                  style={{ 
+                    color: "#FAE452",
+                    fontWeight: 600,
+                    letterSpacing: "-0.03em",
+                    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif",
+                  }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
@@ -618,16 +452,20 @@ export default function SectorWheelPage() {
                 {/* Continue CTA */}
                 <motion.button
                   onClick={proceedToSimulation}
-                  className="px-10 py-3 rounded-full text-sm tracking-wider font-medium transition-all duration-300"
+                  className="px-10 py-4 rounded-full text-sm tracking-wider font-medium transition-all duration-300"
                   style={{
-                    background: "rgba(250, 228, 82, 0.15)",
-                    border: "1px solid rgba(250, 228, 82, 0.6)",
-                    color: "#FAE452",
+                    background: "#FAE452",
+                    color: "#2E3093",
+                    boxShadow: "0 8px 32px rgba(250, 228, 82, 0.4)",
                   }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 1.1 }}
-                  whileHover={{ background: "rgba(250, 228, 82, 0.25)" }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: "0 12px 40px rgba(250, 228, 82, 0.5)",
+                  }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   CONTINUE
                 </motion.button>
@@ -640,6 +478,7 @@ export default function SectorWheelPage() {
         </motion.div>
       )}
     </AnimatePresence>
+    </>
   );
 }
 
@@ -650,7 +489,15 @@ interface WelcomeHeaderProps {
 function WelcomeHeader({ userName }: WelcomeHeaderProps) {
   return (
     <>
-      <h1 className="text-2xl md:text-3xl font-light mb-2" style={{ color: "#ffffff" }}>
+      <h1 
+        className="text-2xl md:text-3xl mb-2 tracking-tight" 
+        style={{ 
+          color: "#ffffff",
+          fontWeight: 600,
+          letterSpacing: "-0.03em",
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif",
+        }}
+      >
         Welcome, <span style={{ color: '#FAE452' }}>{userName}</span>
       </h1>
       <p className="text-sm font-light tracking-wide mb-6" style={{ color: "rgba(255, 255, 255, 0.6)" }}>
