@@ -1,70 +1,179 @@
 import { UserData, FormErrors } from "./types";
 
-// Local storage keys
-const USER_STORAGE_KEY = "genesisUser";
+// Session ID key stored in sessionStorage (browser tab only, not persistent)
+const SESSION_ID_KEY = "genesisSessionId";
 
-// API-based user login
-export const loginUser = async (data: Omit<UserData, "sector">): Promise<UserData & { id: string }> => {
-  const response = await fetch("/api/auth/login", {
+// Extended user data type with database fields
+export interface ExtendedUserData extends UserData {
+  id?: string;
+  sessionId?: string;
+  bestScore?: number;
+  lastScore?: number;
+  attemptCount?: number;
+}
+
+// Get session ID from sessionStorage (tab-specific, cleared on tab close)
+const getSessionId = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return sessionStorage.getItem(SESSION_ID_KEY);
+};
+
+// Set session ID in sessionStorage
+const setSessionId = (sessionId: string): void => {
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem(SESSION_ID_KEY, sessionId);
+  }
+};
+
+// Clear session ID from sessionStorage
+const clearSessionId = (): void => {
+  if (typeof window !== "undefined") {
+    sessionStorage.removeItem(SESSION_ID_KEY);
+  }
+};
+
+// API-based user login - creates session in MongoDB
+export const loginUser = async (data: Omit<UserData, "sector">): Promise<ExtendedUserData & { id: string }> => {
+  // First, authenticate with login API
+  const loginResponse = await fetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
 
-  if (!response.ok) {
-    const error = await response.json();
+  if (!loginResponse.ok) {
+    const error = await loginResponse.json();
     throw new Error(error.error || "Login failed");
   }
 
-  const result = await response.json();
-  
-  // Also save to localStorage for client-side access
-  const userData = result.user;
-  if (typeof window !== "undefined") {
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+  const loginResult = await loginResponse.json();
+  const userData = loginResult.user;
+
+  // Create a session in MongoDB
+  const sessionResponse = await fetch("/api/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      phone: userData.phone,
+      name: userData.name,
+      educationLevel: userData.educationLevel,
+      sector: userData.sector,
+    }),
+  });
+
+  if (sessionResponse.ok) {
+    const sessionResult = await sessionResponse.json();
+    // Store only the session ID in sessionStorage (minimal client-side storage)
+    setSessionId(sessionResult.sessionId);
+    userData.sessionId = sessionResult.sessionId;
   }
-  
+
   return userData;
 };
 
-// User data management (localStorage for quick client access)
-export const saveUserData = (data: UserData): void => {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data));
+// Get user data from MongoDB session (no localStorage)
+export const getUserData = (): ExtendedUserData | null => {
+  // This is now a sync function that returns null
+  // Use getUserDataAsync for actual data
+  const sessionId = getSessionId();
+  if (!sessionId) return null;
+  // Return minimal data to indicate session exists
+  // Actual data should be fetched via getUserDataAsync
+  return { name: "", phone: "", educationLevel: "", sessionId } as ExtendedUserData;
+};
+
+// Fetch user data from MongoDB session
+export const getUserDataAsync = async (): Promise<ExtendedUserData | null> => {
+  const sessionId = getSessionId();
+  if (!sessionId) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`/api/session?sessionId=${encodeURIComponent(sessionId)}`);
+    if (!response.ok) {
+      // Session invalid or expired
+      clearSessionId();
+      return null;
+    }
+    
+    const result = await response.json();
+    if (result.success && result.session) {
+      return {
+        ...result.session,
+        id: result.session.userId,
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error("Failed to fetch session:", error);
+    return null;
   }
 };
 
-export const getUserData = (): (UserData & { id?: string }) | null => {
-  if (typeof window === "undefined") return null;
-  const data = localStorage.getItem(USER_STORAGE_KEY);
-  return data ? JSON.parse(data) : null;
+// Update user sector in MongoDB (both session and user collections)
+export const updateUserSector = async (sector: string): Promise<void> => {
+  const sessionId = getSessionId();
+  if (!sessionId) return;
+
+  try {
+    // Update session
+    await fetch("/api/session", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId, sector }),
+    });
+
+    // Also update user record
+    const sessionData = await getUserDataAsync();
+    if (sessionData?.id) {
+      await fetch("/api/user/sector", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: sessionData.id, sector }),
+      });
+    }
+  } catch (error) {
+    console.error("Failed to update sector:", error);
+  }
 };
 
-export const updateUserSector = async (sector: string): Promise<void> => {
-  const userData = getUserData();
-  if (userData) {
-    // Update localStorage immediately for UI
-    userData.sector = sector;
-    saveUserData(userData);
-    
-    // Update in database if user has an ID
-    if (userData.id) {
-      try {
-        await fetch("/api/user/sector", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: userData.id, sector }),
-        });
-      } catch (error) {
-        console.error("Failed to update sector in database:", error);
-      }
+// Clear user session (logout)
+export const clearUserData = async (): Promise<void> => {
+  const sessionId = getSessionId();
+  if (sessionId) {
+    try {
+      await fetch(`/api/session?sessionId=${encodeURIComponent(sessionId)}`, {
+        method: "DELETE",
+      });
+    } catch (error) {
+      console.error("Failed to clear session:", error);
     }
   }
+  clearSessionId();
 };
 
-export const clearUserData = (): void => {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem(USER_STORAGE_KEY);
+// Legacy sync version for backwards compatibility (deprecated)
+export const saveUserData = (_data: ExtendedUserData): void => {
+  // No-op: Data is now stored in MongoDB only
+  console.warn("saveUserData is deprecated. Data is stored in MongoDB.");
+};
+
+// Fetch user data from database by phone (for internal use)
+export const fetchUserFromDB = async (phone: string): Promise<ExtendedUserData | null> => {
+  try {
+    const response = await fetch(`/api/user?phone=${encodeURIComponent(phone)}`);
+    if (!response.ok) {
+      return null;
+    }
+    const result = await response.json();
+    if (result.success && result.user) {
+      return result.user;
+    }
+    return null;
+  } catch (error) {
+    console.error("Failed to fetch user from database:", error);
+    return null;
   }
 };
 

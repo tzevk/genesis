@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { SECTORS, ANIMATION } from "@/lib/constants";
-import { getUserData, updateUserSector, calculateWheelRotation } from "@/lib/utils";
+import { getUserDataAsync, updateUserSector, calculateWheelRotation } from "@/lib/utils";
 import {
   SectorWheel,
   SectorLegend,
@@ -177,12 +177,17 @@ export default function SectorWheelPage() {
   const typingText = "Every engineer begins with a";
 
   useEffect(() => {
-    const userData = getUserData();
-    if (!userData) {
-      router.push("/");
-      return;
-    }
-    setUserName(userData.name);
+    const loadUserData = async () => {
+      // Fetch user data from MongoDB session
+      const userData = await getUserDataAsync();
+      if (!userData) {
+        router.push("/");
+        return;
+      }
+      setUserName(userData.name);
+    };
+    
+    loadUserData();
   }, [router]);
 
   // Typing effect for intro
@@ -253,8 +258,8 @@ export default function SectorWheelPage() {
     }, ANIMATION.wheelSpinDuration);
   }, [isSpinning, rotation]);
 
-  const proceedToSimulation = () => {
-    router.push("/simulation");
+  const proceedToCanvas = () => {
+    router.push("/canvas");
   };
 
   return (
@@ -451,7 +456,7 @@ export default function SectorWheelPage() {
 
                 {/* Continue CTA */}
                 <motion.button
-                  onClick={proceedToSimulation}
+                  onClick={proceedToCanvas}
                   className="px-10 py-4 rounded-full text-sm tracking-wider font-medium transition-all duration-300"
                   style={{
                     background: "#FAE452",
