@@ -3,13 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { SECTORS, ANIMATION } from "@/lib/constants";
-import { getUserDataAsync, updateUserSector, calculateWheelRotation } from "@/lib/utils";
-import {
-  SectorWheel,
-  SectorLegend,
-  BlinkDetector,
-} from "@/components";
+import { SECTORS } from "@/lib/constants";
+import { getUserDataAsync, updateUserSector } from "@/lib/utils";
 
 // Background component matching splash/login screens
 function WaveBackground() {
@@ -156,15 +151,12 @@ function WaveBackground() {
   );
 }
 
-type PagePhase = "intro" | "wheel";
+type PagePhase = "intro" | "selection";
 
 export default function SectorWheelPage() {
   const router = useRouter();
-  const [userName, setUserName] = useState("");
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [rotation, setRotation] = useState(0);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Intro phase state
   const [phase, setPhase] = useState<PagePhase>("intro");
@@ -184,7 +176,6 @@ export default function SectorWheelPage() {
         router.push("/");
         return;
       }
-      setUserName(userData.name);
     };
     
     loadUserData();
@@ -228,38 +219,65 @@ export default function SectorWheelPage() {
     return () => clearTimeout(startDelay);
   }, [phase]);
 
-  // Transition to wheel phase
+  // Transition to selection phase
   const handleContinue = () => {
-    setPhase("wheel");
+    setPhase("selection");
   };
 
-  const spinWheel = useCallback(() => {
-    if (isSpinning) return;
+  const handleSectorSelect = (sectorName: string) => {
+    setSelectedSector(sectorName);
+  };
 
-    setIsSpinning(true);
-    setShowResult(false);
-
-    const sectorIndex = Math.floor(Math.random() * SECTORS.length);
-    const totalRotation = calculateWheelRotation(
-      rotation,
-      sectorIndex,
-      SECTORS.length,
-      ANIMATION.minRotations,
-      ANIMATION.maxRotations
-    );
-
-    setRotation(totalRotation);
-
-    setTimeout(async () => {
-      setSelectedSector(SECTORS[sectorIndex].name);
-      setIsSpinning(false);
-      setShowResult(true);
-      await updateUserSector(SECTORS[sectorIndex].name);
-    }, ANIMATION.wheelSpinDuration);
-  }, [isSpinning, rotation]);
-
-  const proceedToCanvas = () => {
+  const handleConfirmSelection = useCallback(async () => {
+    if (!selectedSector || isSubmitting) return;
+    
+    setIsSubmitting(true);
+    await updateUserSector(selectedSector);
     router.push("/canvas");
+  }, [selectedSector, isSubmitting, router]);
+
+  // Get sector icon component
+  const getSectorIcon = (iconName: string) => {
+    switch (iconName) {
+      case "process":
+        return (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round"/>
+            <circle cx="12" cy="12" r="4"/>
+          </svg>
+        );
+      case "hvac":
+        return (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">
+            <path d="M12 3v18M3 12h18M7 7l10 10M17 7L7 17" strokeLinecap="round"/>
+            <circle cx="12" cy="12" r="9" strokeDasharray="4 2"/>
+          </svg>
+        );
+      case "oilgas":
+        return (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">
+            <path d="M12 2L8 10h8l-4-8z"/>
+            <path d="M8 10v8a4 4 0 0 0 8 0v-8" strokeLinecap="round"/>
+            <path d="M10 14h4M10 17h4" strokeLinecap="round"/>
+          </svg>
+        );
+      case "electrical":
+        return (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        );
+      case "mep":
+        return (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18M9 3v18M15 9v12" strokeLinecap="round"/>
+            <circle cx="6" cy="6" r="1.5" fill="currentColor"/>
+          </svg>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -394,10 +412,10 @@ export default function SectorWheelPage() {
         </motion.div>
       )}
 
-      {/* WHEEL PHASE */}
-      {phase === "wheel" && (
+      {/* SECTOR SELECTION PHASE */}
+      {phase === "selection" && (
         <motion.div
-          key="wheel"
+          key="selection"
           className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -405,109 +423,133 @@ export default function SectorWheelPage() {
         >
           <WaveBackground />
 
-          <div className="relative z-10 text-center">
-            {/* Header - hide after result */}
-            {!showResult && <WelcomeHeader userName={userName} />}
-
-            <SectorWheel rotation={rotation} />
-
-            {/* Blink detector for spin control */}
-            {!showResult && (
-              <div className="mt-4">
-                <BlinkDetector onBlink={spinWheel} disabled={isSpinning} />
-              </div>
-            )}
-
-            {/* Result - inline fade in, no popup */}
-            {showResult && selectedSector && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                className="mt-2"
+          <div className="relative z-10 text-center w-full max-w-2xl px-4">
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <h1 
+                className="text-2xl md:text-3xl mb-2 tracking-tight" 
+                style={{ 
+                  color: "#ffffff",
+                  fontWeight: 600,
+                  letterSpacing: "-0.03em",
+                  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif",
+                }}
               >
-                {/* Sector name */}
-                <motion.h2
-                  className="text-3xl md:text-4xl tracking-tight mb-2"
-                  style={{ 
-                    color: "#FAE452",
-                    fontWeight: 600,
-                    letterSpacing: "-0.03em",
-                    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif",
-                  }}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.5 }}
-                >
-                  {selectedSector}
-                </motion.h2>
+                Choose your <span style={{ color: '#FAE452' }}>sector</span>
+              </h1>
+              <p className="text-sm font-light tracking-wide mb-8" style={{ color: "rgba(255, 255, 255, 0.6)" }}>
+                Select the engineering domain you want to explore
+              </p>
+            </motion.div>
 
-                {/* One-line meaning */}
-                <motion.p
-                  className="text-sm font-light tracking-wide mb-8"
-                  style={{ color: "rgba(255, 255, 255, 0.6)" }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.8 }}
-                >
-                  {SECTORS.find(s => s.name === selectedSector)?.description &&
-                    `Build and design ${SECTORS.find(s => s.name === selectedSector)?.description}.`}
-                </motion.p>
-
-                {/* Continue CTA */}
+            {/* Sector Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+              {SECTORS.map((sector, index) => (
                 <motion.button
-                  onClick={proceedToCanvas}
-                  className="px-10 py-4 rounded-full text-sm tracking-wider font-medium transition-all duration-300"
+                  key={sector.name}
+                  onClick={() => handleSectorSelect(sector.name)}
+                  className="relative p-6 rounded-2xl transition-all duration-300 group"
                   style={{
-                    background: "#FAE452",
-                    color: "#2E3093",
-                    boxShadow: "0 8px 32px rgba(250, 228, 82, 0.4)",
+                    background: selectedSector === sector.name 
+                      ? "rgba(250, 228, 82, 0.15)" 
+                      : "rgba(255, 255, 255, 0.05)",
+                    border: selectedSector === sector.name 
+                      ? "2px solid #FAE452" 
+                      : "2px solid rgba(255, 255, 255, 0.1)",
+                    backdropFilter: "blur(10px)",
                   }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 1.1 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
                   whileHover={{ 
-                    scale: 1.05,
-                    boxShadow: "0 12px 40px rgba(250, 228, 82, 0.5)",
+                    scale: 1.02,
+                    background: "rgba(250, 228, 82, 0.1)",
+                    borderColor: "rgba(250, 228, 82, 0.5)",
                   }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  CONTINUE
-                </motion.button>
-              </motion.div>
-            )}
+                  {/* Selection indicator */}
+                  {selectedSector === sector.name && (
+                    <motion.div
+                      className="absolute top-3 right-3"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <circle cx="10" cy="10" r="10" fill="#FAE452"/>
+                        <path d="M6 10l3 3 5-6" stroke="#2E3093" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </motion.div>
+                  )}
 
-            {/* Legend - only show before result */}
-            {!showResult && <SectorLegend />}
+                  {/* Icon */}
+                  <div 
+                    className="mb-3 flex justify-center transition-colors duration-300"
+                    style={{ 
+                      color: selectedSector === sector.name ? "#FAE452" : "rgba(255, 255, 255, 0.7)" 
+                    }}
+                  >
+                    {getSectorIcon(sector.icon)}
+                  </div>
+
+                  {/* Sector name */}
+                  <h3 
+                    className="text-lg font-semibold mb-1 transition-colors duration-300"
+                    style={{ 
+                      color: selectedSector === sector.name ? "#FAE452" : "#ffffff" 
+                    }}
+                  >
+                    {sector.name}
+                  </h3>
+
+                  {/* Description */}
+                  <p 
+                    className="text-xs font-light leading-relaxed transition-colors duration-300"
+                    style={{ 
+                      color: selectedSector === sector.name 
+                        ? "rgba(250, 228, 82, 0.8)" 
+                        : "rgba(255, 255, 255, 0.5)" 
+                    }}
+                  >
+                    {sector.description}
+                  </p>
+                </motion.button>
+              ))}
+            </div>
+
+            {/* Continue Button */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: selectedSector ? 1 : 0.3 }}
+              transition={{ duration: 0.3 }}
+            >
+              <motion.button
+                onClick={handleConfirmSelection}
+                disabled={!selectedSector || isSubmitting}
+                className="px-10 py-4 rounded-full text-sm tracking-wider font-medium transition-all duration-300 disabled:cursor-not-allowed"
+                style={{
+                  background: selectedSector ? "#FAE452" : "rgba(250, 228, 82, 0.3)",
+                  color: "#2E3093",
+                  boxShadow: selectedSector ? "0 8px 32px rgba(250, 228, 82, 0.4)" : "none",
+                }}
+                whileHover={selectedSector ? { 
+                  scale: 1.05,
+                  boxShadow: "0 12px 40px rgba(250, 228, 82, 0.5)",
+                } : {}}
+                whileTap={selectedSector ? { scale: 0.98 } : {}}
+              >
+                {isSubmitting ? "LOADING..." : "CONTINUE"}
+              </motion.button>
+            </motion.div>
           </div>
         </motion.div>
       )}
     </AnimatePresence>
-    </>
-  );
-}
-
-interface WelcomeHeaderProps {
-  userName: string;
-}
-
-function WelcomeHeader({ userName }: WelcomeHeaderProps) {
-  return (
-    <>
-      <h1 
-        className="text-2xl md:text-3xl mb-2 tracking-tight" 
-        style={{ 
-          color: "#ffffff",
-          fontWeight: 600,
-          letterSpacing: "-0.03em",
-          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif",
-        }}
-      >
-        Welcome, <span style={{ color: '#FAE452' }}>{userName}</span>
-      </h1>
-      <p className="text-sm font-light tracking-wide mb-6" style={{ color: "rgba(255, 255, 255, 0.6)" }}>
-        Look at the camera and blink to spin
-      </p>
     </>
   );
 }
