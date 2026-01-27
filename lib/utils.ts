@@ -55,6 +55,7 @@ export const loginUser = async (data: Omit<UserData, "sector">): Promise<Extende
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       phone: userData.phone,
+      email: userData.email,
       name: userData.name,
       educationLevel: userData.educationLevel,
       sector: userData.sector,
@@ -185,6 +186,12 @@ export const validateLoginForm = (formData: Omit<UserData, "sector">): FormError
     errors.name = "Name is required";
   } else if (formData.name.trim().length < 2) {
     errors.name = "Name must be at least 2 characters";
+  }
+
+  if (!formData.email.trim()) {
+    errors.email = "Email is required";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    errors.email = "Please enter a valid email address";
   }
 
   if (!formData.phone.trim()) {

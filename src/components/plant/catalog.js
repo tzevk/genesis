@@ -86,7 +86,22 @@ export const ICONS = {
   
   boiler: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="12" rx="2"/><path d="M8 8V6a4 4 0 018 0v2"/><path d="M9 14h6"/><circle cx="12" cy="14" r="1"/></svg>`,
   
-  wellhead: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="M8 9h8"/><path d="M6 5h12v4H6z"/><path d="M10 5V3h4v2"/></svg>`
+  wellhead: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="M8 9h8"/><path d="M6 5h12v4H6z"/><path d="M10 5V3h4v2"/></svg>`,
+  
+  // Oil & Gas specific icons
+  oilReservoir: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="18" rx="8" ry="3"/><path d="M4 18v-4c0-1.5 3.5-3 8-3s8 1.5 8 3v4"/><path d="M8 11c0-2 1.8-4 4-4s4 2 4 4"/><circle cx="12" cy="7" r="1"/></svg>`,
+  
+  drillingRig: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v16"/><path d="M8 6l4-4 4 4"/><path d="M6 10h12"/><path d="M8 10v8H6v2h12v-2h-2v-8"/><path d="M10 18h4"/><path d="M12 18v4"/></svg>`,
+  
+  floatingPlatform: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="6" rx="1"/><path d="M6 10V7h4v3"/><path d="M14 10V5h4v5"/><path d="M2 20c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M8 16v2"/><path d="M16 16v2"/></svg>`,
+  
+  pipeline: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h6"/><path d="M16 12h6"/><rect x="8" y="9" width="8" height="6" rx="1"/><circle cx="12" cy="12" r="1"/><path d="M5 9v6"/><path d="M19 9v6"/></svg>`,
+  
+  oilWaterSeparator: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.66 3.58 3 8 3s8-1.34 8-3V6"/><path d="M4 12h16" stroke-dasharray="4 2"/><path d="M8 9v3"/><path d="M16 15v3"/></svg>`,
+  
+  storageTank: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="7" ry="2"/><path d="M5 5v14c0 1.1 3.13 2 7 2s7-.9 7-2V5"/><path d="M5 12c0 1.1 3.13 2 7 2s7-.9 7-2"/><path d="M12 7v4"/></svg>`,
+  
+  tanker: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16h20v3H2z"/><path d="M4 13h12v3H4z"/><path d="M16 11l4 5"/><ellipse cx="6" cy="11" rx="2" ry="2"/><ellipse cx="12" cy="11" rx="2" ry="2"/><circle cx="6" cy="21" r="2"/><circle cx="18" cy="21" r="2"/></svg>`
 };
 
 // ============================================
@@ -123,15 +138,16 @@ export const COMPONENT_CATALOG_BY_SECTOR = {
   ],
 
   oilgas: [
-    { id: "wellhead", label: "Wellhead", slot: "SOURCE" },
-    { id: "manifold", label: "Manifold", slot: "PRESSURIZATION" },
-    { id: "separator", label: "Separator", slot: "SEPARATION" },
-    { id: "heater_treater", label: "Heater Treater", slot: "THERMAL" },
-    { id: "gas_compressor", label: "Gas Compressor", slot: "PRESSURIZATION" },
-    { id: "dehydrator", label: "Dehydrator", slot: "REACTION" },
-    { id: "storage_tank", label: "Storage Tank", slot: "STORAGE" },
-    { id: "export_pump", label: "Export Pump", slot: "PRESSURIZATION" },
-    { id: "flare_system", label: "Flare System", slot: "SAFETY" }
+    // Upstream Stage
+    { id: "oil_reservoir", label: "Oil Reservoir", slot: "SOURCE", stage: "upstream" },
+    { id: "drilling_rig", label: "Drilling Rig", slot: "PRESSURIZATION", stage: "upstream" },
+    { id: "floating_platform", label: "Floating Offshore Platform", slot: "REACTION", stage: "upstream" },
+    // Midstream Stage
+    { id: "pipeline_onshore", label: "Pipeline to Onshore", slot: "SEPARATION", stage: "midstream" },
+    // Downstream Stage
+    { id: "oil_water_separator", label: "Oil and Water Separator", slot: "THERMAL", stage: "downstream" },
+    { id: "storage_tank", label: "Storage Tank", slot: "STORAGE", stage: "downstream" },
+    { id: "tanker", label: "Tanker", slot: "CONTROL", stage: "downstream" }
   ],
 
   electrical: [
@@ -188,14 +204,13 @@ const COMPONENT_ICON_MAP = {
   bms_controller: "controller",
   room_zone: "thermostat",
   // Oil & Gas
-  wellhead: "wellhead",
-  manifold: "pipe",
-  heater_treater: "heater",
-  gas_compressor: "compressor",
-  dehydrator: "filter",
-  storage_tank: "tank",
-  export_pump: "pump",
-  flare_system: "flare",
+  oil_reservoir: "oilReservoir",
+  drilling_rig: "drillingRig",
+  floating_platform: "floatingPlatform",
+  pipeline_onshore: "pipeline",
+  oil_water_separator: "oilWaterSeparator",
+  storage_tank: "storageTank",
+  tanker: "tanker",
   // Electrical
   generator: "generator",
   stepup_transformer: "transformer",

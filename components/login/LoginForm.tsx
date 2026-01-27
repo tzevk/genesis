@@ -14,6 +14,7 @@ interface LoginFormProps {
 export function LoginForm({ onStartSimulation }: LoginFormProps) {
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
     phone: "",
     educationLevel: "",
   });
@@ -167,6 +168,51 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                 {errors.name && (
                   <p className="mt-1.5 text-xs" style={{ color: "#FAE452" }}>
                     {errors.name}
+                  </p>
+                )}
+              </motion.div>
+
+              {/* Email Field */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.35 }}
+              >
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "#2E3093" }}
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-3.5 rounded-xl text-base transition-all duration-300 focus:outline-none"
+                  style={{
+                    background: "#FFFFFF",
+                    border: errors.email 
+                      ? "2px solid #FAE452" 
+                      : "2px solid rgba(46, 48, 147, 0.3)",
+                    color: "#2E3093",
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "#2E3093";
+                    e.target.style.boxShadow = "0 4px 16px rgba(46, 48, 147, 0.25)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = errors.email ? "#FAE452" : "rgba(46, 48, 147, 0.3)";
+                    e.target.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+                  }}
+                />
+                {errors.email && (
+                  <p className="mt-1.5 text-xs" style={{ color: "#FAE452" }}>
+                    {errors.email}
                   </p>
                 )}
               </motion.div>

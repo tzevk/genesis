@@ -4,10 +4,10 @@ import { getDatabase } from "@/lib/mongodb";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, phone, educationLevel } = body;
+    const { name, email, phone, educationLevel } = body;
 
     // Validate input
-    if (!name || !phone || !educationLevel) {
+    if (!name || !email || !phone || !educationLevel) {
       return NextResponse.json(
         { error: "All fields are required" },
         { status: 400 }
@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
         { phone },
         { 
           $set: { 
-            name, 
+            name,
+            email,
             educationLevel,
             lastLogin: new Date(),
           } 
@@ -39,6 +40,7 @@ export async function POST(request: NextRequest) {
         user: {
           id: existingUser._id.toString(),
           name,
+          email,
           phone,
           educationLevel,
           sector: existingUser.sector || null,
@@ -49,6 +51,7 @@ export async function POST(request: NextRequest) {
     // Create new user
     const result = await users.insertOne({
       name,
+      email,
       phone,
       educationLevel,
       sector: null,
@@ -62,6 +65,7 @@ export async function POST(request: NextRequest) {
       user: {
         id: result.insertedId.toString(),
         name,
+        email,
         phone,
         educationLevel,
         sector: null,

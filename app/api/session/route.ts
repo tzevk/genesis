@@ -9,7 +9,7 @@ import { getDatabase } from "@/lib/mongodb";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { phone, name, educationLevel, sector } = body;
+    const { phone, email, name, educationLevel, sector } = body;
 
     if (!phone) {
       return NextResponse.json(
@@ -31,6 +31,7 @@ export async function POST(request: Request) {
         $set: {
           sessionId,
           phone,
+          email,
           name,
           educationLevel,
           sector,

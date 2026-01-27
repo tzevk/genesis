@@ -1,14 +1,9 @@
 /**
- * Canvas Page - Hybrid Plant Builder
+ * Canvas Page - Plant Builder
  * 
- * Full-screen 3-panel layout for engineering simulation:
- * - Left: SlotPanel (sequence slots) + Toolbox (components)
- * - Center: BlueprintCanvas (drag & drop area)
- * - Right: StatusPanel (progress & system log)
- * 
- * Responsive Design:
- * - Desktop (lg+): 3-column horizontal layout
- * - Mobile/Tablet: Vertical stacked layout
+ * Routes to different canvas experiences based on sector:
+ * - Oil & Gas: Pipe-connecting canvas with flow validation
+ * - Other sectors: Standard drag-drop component builder
  * 
  * Brand Colors Only:
  * - #2E3093 (deep indigo) - backgrounds, borders
@@ -16,12 +11,14 @@
  * - #FAE452 (yellow) - accents, highlights
  */
 
-import { CanvasClient } from "./CanvasClient";
+"use client";
+
+import { CanvasRouter } from "./CanvasRouter";
 
 /**
  * Server component wrapper for the canvas page
  * Keeps "use client" only in the client component
  */
 export default function CanvasPage() {
-  return <CanvasClient />;
+  return <CanvasRouter />;
 }

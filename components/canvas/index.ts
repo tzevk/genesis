@@ -22,6 +22,10 @@ export { DragPreview } from "./DragPreview";
 export { Timer } from "./Timer";
 export { WelcomeOverlay } from "./WelcomeOverlay";
 export { CompletionOverlay } from "./CompletionOverlay";
+export { TutorialOverlay, getTutorialSteps, OIL_GAS_TUTORIAL_STEPS } from "./TutorialOverlay";
+export { PipeConnectingCanvas } from "./PipeConnectingCanvas";
+export { OilGasPipeCanvas } from "./OilGasPipeCanvas";
+
 
 // Re-export CanvasItem type explicitly
 export type { CanvasItem } from "./types";
