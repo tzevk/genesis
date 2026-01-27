@@ -21,6 +21,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { type CanvasItem } from "./types";
 import { getComponentById, ICONS } from "@/src/components/plant/catalog";
 import { PipeOverlay } from "@/src/components/plant/PipeOverlay";
+import { Timer } from "./Timer";
+import { TIMER_DURATION } from "./constants";
 
 // ============================================
 // BRAND COLORS
@@ -260,11 +262,6 @@ export const BlueprintCanvas = forwardRef<HTMLDivElement, BlueprintCanvasProps>(
     const canvasRef = useRef<HTMLDivElement>(null);
     const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
-    // Format timer
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = (timeLeft % 60).toString().padStart(2, "0");
-    const isTimeLow = timeLeft <= 30;
-
     // Handle canvas click - deselect
     const handleCanvasClick = useCallback(() => {
       setSelectedItemId(null);
@@ -356,30 +353,8 @@ export const BlueprintCanvas = forwardRef<HTMLDivElement, BlueprintCanvasProps>(
             </span>
           </button>
 
-          {/* Timer */}
-          <div
-            className="flex items-center gap-1.5 px-2 py-1 rounded-lg"
-            style={{
-              background: isTimeLow ? `${BRAND.yellow}20` : `${BRAND.blue}20`,
-              border: `1px solid ${isTimeLow ? BRAND.yellow : `${BRAND.blue}40`}`,
-            }}
-          >
-            <svg
-              className="w-3.5 h-3.5"
-              style={{ color: isTimeLow ? BRAND.yellow : `${BRAND.white}70` }}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span
-              className="text-sm font-bold font-mono"
-              style={{ color: isTimeLow ? BRAND.yellow : BRAND.white }}
-            >
-              {minutes}:{seconds}
-            </span>
-          </div>
+          {/* Timer - Apple-style ring */}
+          <Timer timeLeft={timeLeft} totalTime={TIMER_DURATION} />
         </div>
 
         {/* Canvas area */}

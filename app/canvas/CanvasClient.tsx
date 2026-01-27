@@ -641,15 +641,6 @@ export function CanvasClient() {
           />
         </aside>
       </div>
-
-      {/* Drag preview - follows cursor */}
-      {draggingComponent && (
-        <DragPreview
-          emoji={sectorComponents.find((c) => c.id === draggingComponent)?.emoji || ""}
-          position={dragPosition}
-          sectorColor={sectorColor}
-        />
-      )}
     </div>
   );
 }

@@ -17,7 +17,6 @@
  */
 
 import { useState, useCallback, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   CATEGORIES,
   ICONS,
@@ -85,27 +84,31 @@ function ComponentCard({
   onDragStart,
 }: ComponentCardProps) {
   const iconSvg = ICONS[iconKey as keyof typeof ICONS] || ICONS.tank;
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    onDragStart(e, id);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
 
   return (
-    <motion.div
+    <div
       draggable
-      onDragStart={(e) => onDragStart(e as unknown as React.DragEvent, id)}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       onClick={() => onSelect(id)}
-      className="relative flex flex-col items-center justify-center p-2 rounded-lg cursor-grab active:cursor-grabbing select-none"
+      className="relative flex flex-col items-center justify-center p-2 rounded-lg cursor-grab active:cursor-grabbing select-none hover:scale-[1.02] transition-all duration-150"
       style={{
         background: isSelected ? `${BRAND.yellow}20` : `${BRAND.blue}15`,
-        border: `1px solid ${isSelected ? BRAND.yellow : `${BRAND.blue}30`}`,
+        border: isSelected ? `2px solid ${BRAND.yellow}` : `1px solid ${BRAND.blue}30`,
+        boxShadow: isSelected ? `0 0 12px ${BRAND.yellow}40` : 'none',
         minHeight: "64px",
+        opacity: isDragging ? 0.4 : 1,
       }}
-      whileHover={{
-        scale: 1.02,
-        borderColor: isSelected ? BRAND.yellow : `${BRAND.blue}60`,
-        background: isSelected ? `${BRAND.yellow}25` : `${BRAND.blue}25`,
-      }}
-      whileTap={{ scale: 0.98 }}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
     >
       {/* Icon */}
       <div
@@ -133,19 +136,7 @@ function ComponentCard({
       >
         {slotHint.slice(0, 3)}
       </span>
-
-      {/* Selected indicator */}
-      {isSelected && (
-        <motion.div
-          className="absolute inset-0 rounded-lg pointer-events-none"
-          style={{
-            border: `2px solid ${BRAND.yellow}`,
-            boxShadow: `0 0 12px ${BRAND.yellow}40`,
-          }}
-          layoutId="selected-indicator"
-        />
-      )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -221,32 +212,24 @@ function CategorySection({
       </button>
 
       {/* Components grid */}
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="grid grid-cols-2 gap-1.5 pt-2">
-              {components.map((comp) => (
-                <ComponentCard
-                  key={comp.id}
-                  id={comp.id}
-                  label={comp.label}
-                  iconKey={comp.icon}
-                  slotHint={comp.slotHint}
-                  isSelected={selectedTool === comp.id}
-                  onSelect={onSelectTool}
-                  onDragStart={onDragStart}
-                />
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isExpanded && (
+        <div className="overflow-hidden">
+          <div className="grid grid-cols-2 gap-1.5 pt-2">
+            {components.map((comp) => (
+              <ComponentCard
+                key={comp.id}
+                id={comp.id}
+                label={comp.label}
+                iconKey={comp.icon}
+                slotHint={comp.slotHint}
+                isSelected={selectedTool === comp.id}
+                onSelect={onSelectTool}
+                onDragStart={onDragStart}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -306,17 +289,12 @@ export function Toolbox({
       e.dataTransfer.setData("componentId", componentId);
       e.dataTransfer.effectAllowed = "copy";
 
-      // Create a minimal drag image
-      const dragImg = document.createElement("div");
-      dragImg.style.width = "48px";
-      dragImg.style.height = "48px";
-      dragImg.style.background = BRAND.indigo;
-      dragImg.style.borderRadius = "8px";
-      dragImg.style.position = "absolute";
-      dragImg.style.top = "-1000px";
-      document.body.appendChild(dragImg);
-      e.dataTransfer.setDragImage(dragImg, 24, 24);
-      setTimeout(() => document.body.removeChild(dragImg), 0);
+      // Use a transparent 1x1 pixel image to hide the default drag ghost
+      // This prevents the "glitch" of seeing a duplicate element
+      const canvas = document.createElement("canvas");
+      canvas.width = 1;
+      canvas.height = 1;
+      e.dataTransfer.setDragImage(canvas, 0, 0);
 
       // Notify parent
       onDragStart?.(componentId);
@@ -325,15 +303,12 @@ export function Toolbox({
   );
 
   return (
-    <motion.div
+    <div
       className="flex flex-col h-full rounded-xl overflow-hidden"
       style={{
         background: `${BRAND.indigo}`,
         border: `1px solid ${BRAND.blue}40`,
       }}
-      initial={{ x: -20, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.4 }}
     >
       {/* Header */}
       <div
@@ -452,6 +427,6 @@ export function Toolbox({
           Click to select or drag to canvas
         </p>
       </div>
-    </motion.div>
+    </div>
   );
 }

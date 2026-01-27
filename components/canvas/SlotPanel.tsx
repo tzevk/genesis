@@ -17,8 +17,7 @@
  * - #FFFFFF (white) - text
  */
 
-import { useState, useCallback, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useCallback, useMemo, useRef } from "react";
 import {
   SLOT_ORDER,
   SLOT_DISPLAY_NAMES,
@@ -101,29 +100,48 @@ function SlotCard({
 }: SlotCardProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [justDropped, setJustDropped] = useState(false); // Bounce animation state
+  const [magneticPull, setMagneticPull] = useState(false); // Magnetic snap state
   const isFilled = componentId !== null;
+  const dragCounterRef = useRef(0);
+  const slotRef = useRef<HTMLDivElement>(null);
 
   // Get component info if slot is filled
   const component = isFilled ? getComponentById(componentId) as CatalogComponent | undefined : null;
   const componentLabel = component?.label || componentId;
   const iconSvg = component ? (ICONS[component.icon as keyof typeof ICONS] || ICONS.tank) : null;
 
+  // Handle drag enter - use counter to prevent flicker from child elements
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounterRef.current++;
+    setIsDragOver(true);
+    // Trigger magnetic pull effect
+    setMagneticPull(true);
+  }, []);
+
   // Handle drag over
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "copy";
-    setIsDragOver(true);
   }, []);
 
-  // Handle drag leave
-  const handleDragLeave = useCallback(() => {
-    setIsDragOver(false);
+  // Handle drag leave - use counter to prevent flicker from child elements
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounterRef.current--;
+    if (dragCounterRef.current === 0) {
+      setIsDragOver(false);
+      setMagneticPull(false);
+    }
   }, []);
 
-  // Handle drop
+  // Handle drop with bounce animation
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    dragCounterRef.current = 0; // Reset counter on drop
     setIsDragOver(false);
+    setMagneticPull(false);
 
     const droppedComponentId = e.dataTransfer.getData("componentId");
     if (!droppedComponentId) return;
@@ -146,7 +164,10 @@ function SlotCard({
       return;
     }
 
-    // Valid drop
+    // Valid drop - trigger bounce animation
+    setJustDropped(true);
+    setTimeout(() => setJustDropped(false), 400);
+    
     onDrop(slotId, droppedComponentId);
     onMessage("success", `${droppedComponent.label} placed in ${slotName}`);
   }, [slotId, slotName, onDrop, onMessage]);
@@ -158,37 +179,65 @@ function SlotCard({
     onMessage("success", `Cleared ${slotName}`);
   }, [slotId, slotName, onClear, onMessage]);
 
+  // Compute dynamic styles for magnetic snapping and haptic feedback
+  const getTransform = () => {
+    if (justDropped) return 'scale(1.08)'; // Bounce up
+    if (magneticPull) return 'scale(1.05) translateY(-2px)'; // Magnetic pull effect
+    if (isDragOver) return 'scale(1.03)'; // Hover scale
+    return 'scale(1)';
+  };
+
+  const getBoxShadow = () => {
+    if (isError) return `0 0 20px #FF444460, inset 0 0 10px #FF444420`;
+    if (justDropped) return `0 0 25px ${BRAND.yellow}80, 0 8px 25px ${BRAND.yellow}40`; // Glow burst
+    if (magneticPull) return `0 0 20px ${BRAND.yellow}60, 0 4px 15px ${BRAND.yellow}30`; // Magnetic glow
+    if (isDragOver) return `0 0 15px ${BRAND.yellow}40, 0 2px 10px ${BRAND.yellow}20`;
+    return 'none';
+  };
+
   return (
-    <motion.div
+    <div
+      ref={slotRef}
+      onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className="relative p-2.5 rounded-lg transition-all duration-200"
+      className="relative p-2.5 rounded-lg"
       style={{
         background: isFilled 
           ? `${BRAND.blue}25` 
-          : isDragOver 
-            ? `${BRAND.yellow}15` 
-            : `${BRAND.blue}10`,
+          : justDropped
+            ? `${BRAND.yellow}25`
+            : isDragOver 
+              ? `${BRAND.yellow}20` 
+              : `${BRAND.blue}10`,
         border: isError 
           ? `2px solid #FF4444` 
-          : isFilled 
-            ? `1px solid ${BRAND.yellow}40` 
-            : isDragOver 
-              ? `2px dashed ${BRAND.yellow}` 
-              : `1px dashed ${BRAND.blue}40`,
-        boxShadow: isError 
-          ? `0 0 12px #FF444440` 
-          : isDragOver 
-            ? `0 0 8px ${BRAND.yellow}30` 
-            : "none",
+          : justDropped
+            ? `2px solid ${BRAND.yellow}`
+            : isFilled 
+              ? `1px solid ${BRAND.yellow}40` 
+              : isDragOver 
+                ? `2px solid ${BRAND.yellow}` 
+                : `1px dashed ${BRAND.blue}40`,
+        boxShadow: getBoxShadow(),
+        transform: getTransform(),
+        transition: justDropped 
+          ? 'transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease-out, background 0.15s ease-out, border 0.15s ease-out'
+          : 'transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.2s ease-out, background 0.2s ease-out, border 0.2s ease-out',
       }}
-      animate={{
-        scale: isDragOver ? 1.02 : 1,
-        x: isError ? [0, -4, 4, -4, 4, 0] : 0,
-      }}
-      transition={{ duration: isError ? 0.4 : 0.15 }}
     >
+      {/* Magnetic attraction indicator */}
+      {magneticPull && (
+        <div 
+          className="absolute inset-0 rounded-lg pointer-events-none"
+          style={{
+            background: `radial-gradient(circle at center, ${BRAND.yellow}15 0%, transparent 70%)`,
+            animation: 'pulse-glow 0.6s ease-in-out infinite',
+          }}
+        />
+      )}
+      
       {/* Slot number badge */}
       <div
         className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
@@ -256,16 +305,12 @@ function SlotCard({
 
         {/* Clear button */}
         {isFilled && (
-          <motion.button
+          <button
             onClick={handleClear}
-            className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
+            className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 hover:bg-red-500/40 active:scale-90 transition-all duration-150"
             style={{
               background: `${BRAND.blue}40`,
             }}
-            whileHover={{
-              background: "#FF444460",
-            }}
-            whileTap={{ scale: 0.9 }}
           >
             <svg
               className="w-3 h-3"
@@ -276,25 +321,20 @@ function SlotCard({
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </motion.button>
+          </button>
         )}
       </div>
 
       {/* Drag over indicator */}
-      <AnimatePresence>
-        {isDragOver && (
-          <motion.div
-            className="absolute inset-0 rounded-lg pointer-events-none"
-            style={{
-              background: `linear-gradient(135deg, ${BRAND.yellow}10, transparent)`,
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          />
-        )}
-      </AnimatePresence>
-    </motion.div>
+      {isDragOver && (
+        <div
+          className="absolute inset-0 rounded-lg pointer-events-none transition-opacity duration-150"
+          style={{
+            background: `linear-gradient(135deg, ${BRAND.yellow}10, transparent)`,
+          }}
+        />
+      )}
+    </div>
   );
 }
 
@@ -333,15 +373,12 @@ export function SlotPanel({
   }, [sector, slots]);
 
   return (
-    <motion.div
+    <div
       className="h-full flex flex-col rounded-xl overflow-hidden"
       style={{
         background: `${BRAND.indigo}`,
         border: `1px solid ${BRAND.blue}40`,
       }}
-      initial={{ x: -20, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.4 }}
     >
       {/* Header */}
       <div
@@ -411,16 +448,12 @@ export function SlotPanel({
           className="h-1.5 rounded-full overflow-hidden"
           style={{ background: `${BRAND.blue}30` }}
         >
-          <motion.div
-            className="h-full rounded-full"
+          <div
+            className="h-full rounded-full transition-all duration-400 ease-out"
             style={{ 
-              background: status.complete 
-                ? `linear-gradient(90deg, ${BRAND.yellow}, #4ADE80)` 
-                : BRAND.yellow 
+              background: BRAND.yellow,
+              width: `${status.progress}%`,
             }}
-            initial={{ width: 0 }}
-            animate={{ width: `${status.progress}%` }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
           />
         </div>
       </div>
@@ -476,6 +509,6 @@ export function SlotPanel({
           </p>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
