@@ -1,18 +1,8 @@
 "use client";
 
-/**
- * OilGas2DCanvas - 2D Drag & Drop Oil & Gas Plant Builder
- * 
- * Features:
- * - Drag components from toolbox
- * - Drop to place 2D icons on canvas
- * - Auto-connecting pipes with animated flow
- * - Sequence validation
- * - Timer and scoring
- */
-
 import { useRef, useState, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import ThankYouOverlay from "./ThankYouOverlay";
 
 // Brand colors - restricted palette
 const COLORS = {
@@ -242,42 +232,45 @@ export function OilGas2DCanvas({
   const [showTutorial, setShowTutorial] = useState(true);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [scoreSaved, setScoreSaved] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+  const [lastFault, setLastFault] = useState<string | null>(null);
+  const [faultComponent, setFaultComponent] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // Tutorial steps configuration
   const TUTORIAL_STEPS = [
     {
       id: "welcome",
-      title: "Welcome to Oil & Gas Plant Builder",
-      description: "Identify which components belong to Upstream, Midstream, and Downstream sectors, then connect them in the correct flow order.",
+      title: "Oil & Gas Plant Builder",
+      description: "Build the complete oil production chain by dragging components in the correct order.",
       highlight: null,
       icon: "welcome",
     },
     {
       id: "toolbox",
       title: "Component Toolbox",
-      description: "These are your components: Upstream (extraction), Midstream (transport), and Downstream (processing & storage). Drag them to the canvas in sequence.",
+      description: "Drag components from here onto the canvas. They're shuffled - figure out the correct sequence!",
       highlight: "left-panel",
       icon: "toolbox",
     },
     {
       id: "canvas",
       title: "Build Area",
-      description: "Connect the structures so oil flows from extraction → transport → processing → storage. Drop components onto the numbered slots.",
+      description: "Drop components here to build your plant. Connect them from extraction → transport → processing → storage.",
       highlight: "canvas",
       icon: "canvas",
     },
     {
       id: "status",
       title: "Status & Progress",
-      description: "Track your time and score here. If placed incorrectly, the system will not start and hints will appear to guide you!",
+      description: "Track your time and score here. Watch for fault indicators if something goes wrong!",
       highlight: "right-panel",
       icon: "status",
     },
     {
       id: "start",
       title: "Ready to Build!",
-      description: "Start with extraction (Reservoir) and work through to storage (Tanker). Build the complete oil production chain. Good luck, Engineer!",
+      description: "Use the rules and fault indicators to guide you. Good luck, Engineer!",
       highlight: null,
       icon: "start",
     },
@@ -287,29 +280,29 @@ export function OilGas2DCanvas({
   const MOBILE_TUTORIAL_STEPS = [
     {
       id: "welcome",
-      title: "Welcome, Engineer!",
-      description: "Build an Oil & Gas production chain by identifying Upstream, Midstream, and Downstream components.",
+      title: "Oil & Gas Plant Builder",
+      description: "Build the complete oil production chain by dragging components in the correct order.",
       highlight: null,
       icon: "welcome",
     },
     {
       id: "toolbar",
       title: "Component Toolbar",
-      description: "Tap and drag components from the bottom toolbar. They're shuffled - find the right order!",
+      description: "Tap and drag components from the bottom toolbar onto the canvas.",
       highlight: "bottom-toolbar",
       icon: "toolbox",
     },
     {
       id: "canvas",
       title: "Drop Zone",
-      description: "Drag components to the numbered slots. Connect them from extraction → transport → processing → storage.",
+      description: "Drop components here. Connect them from extraction → transport → processing → storage.",
       highlight: "canvas",
       icon: "canvas",
     },
     {
       id: "start",
       title: "Let's Go!",
-      description: "Timer and score are in the header. Start with Reservoir (extraction) and build to Tanker (storage). Good luck!",
+      description: "Use the rules and fault indicators to guide you. Good luck!",
       highlight: null,
       icon: "start",
     },
@@ -333,8 +326,8 @@ export function OilGas2DCanvas({
 
   // Slot positions on canvas (responsive)
   const slotPositions = useMemo(() => {
-    const slotSize = isMobile ? 58 : 100;
-    const gap = isMobile ? 20 : 20;
+    const slotSize = isMobile ? 42 : 100;
+    const gap = isMobile ? 8 : 20;
     const sidebarWidth = isMobile ? 0 : 288 + 320 + 32;
     const availableWidth = windowWidth - sidebarWidth - 32;
     const totalWidth = CORRECT_SEQUENCE.length * slotSize + (CORRECT_SEQUENCE.length - 1) * gap;
@@ -344,10 +337,10 @@ export function OilGas2DCanvas({
     
     // Calculate vertical center: header ~56px, toolbar ~120px, some padding
     const headerHeight = isMobile ? 56 : 72;
-    const toolbarHeight = isMobile ? 120 : 0;
+    const toolbarHeight = isMobile ? 140 : 0;
     const availableHeight = windowHeight - headerHeight - toolbarHeight - 32;
     const centerY = isMobile 
-      ? headerHeight + (availableHeight - slotSize) / 2 + slotSize / 2 - 110
+      ? headerHeight + (availableHeight - slotSize) / 2 + slotSize / 2 - 40
       : 280;
     
     return CORRECT_SEQUENCE.map((_, index) => ({
@@ -472,6 +465,31 @@ export function OilGas2DCanvas({
     return messages[componentId] || `Place ${nextExpected} before ${componentId}.`;
   }, [placedComponents]);
 
+  // Determine fault type based on wrong component
+  const getFaultType = useCallback((attemptedComponent: string): string => {
+    const nextExpected = CORRECT_SEQUENCE[placedComponents.length];
+    const attemptedIndex = CORRECT_SEQUENCE.indexOf(attemptedComponent);
+    const expectedIndex = placedComponents.length;
+    
+    // Order fault - component is out of sequence
+    if (attemptedIndex > expectedIndex) {
+      return "order";
+    }
+    // Missing part - trying to skip ahead
+    if (attemptedIndex < expectedIndex && attemptedIndex !== -1) {
+      return "missing";
+    }
+    // Wrong connection - component doesn't fit the current position
+    if (attemptedComponent === "tanker" && nextExpected !== "tanker") {
+      return "connection";
+    }
+    if (attemptedComponent === "separator" && nextExpected === "storage") {
+      return "safety";
+    }
+    // Default to order fault
+    return "order";
+  }, [placedComponents]);
+
   // Handle drop on canvas
   const handleCanvasDrop = useCallback(() => {
     if (!draggingComponent) return;
@@ -479,6 +497,17 @@ export function OilGas2DCanvas({
     // Check sequence
     if (!isCorrectNext(draggingComponent)) {
       setWrongAttempts(prev => prev + 1);
+      // Set the fault type
+      const faultType = getFaultType(draggingComponent);
+      setLastFault(faultType);
+      setFaultComponent(draggingComponent);
+      
+      // Clear fault after 3 seconds
+      setTimeout(() => {
+        setLastFault(null);
+        setFaultComponent(null);
+      }, 3000);
+      
       if (wrongAttempts >= 2) {
         setHintMessage(getErrorMessage(draggingComponent));
         setShowHint(true);
@@ -486,6 +515,10 @@ export function OilGas2DCanvas({
       setDraggingComponent(null);
       return;
     }
+    
+    // Clear any previous fault on successful placement
+    setLastFault(null);
+    setFaultComponent(null);
     
     // Get next slot position
     const slotIndex = placedComponents.length;
@@ -522,7 +555,7 @@ export function OilGas2DCanvas({
     
     setDraggingComponent(null);
     setWrongAttempts(0);
-  }, [draggingComponent, isCorrectNext, wrongAttempts, getErrorMessage, placedComponents, slotPositions, timeLeft, onComplete, saveScoreToBackend]);
+  }, [draggingComponent, isCorrectNext, wrongAttempts, getErrorMessage, getFaultType, placedComponents, slotPositions, timeLeft, onComplete, saveScoreToBackend]);
 
   // Drag handlers
   const handleDragStart = (componentId: string) => {
@@ -774,20 +807,23 @@ export function OilGas2DCanvas({
                     {comp.name}
                   </p>
                   <p className="text-[10px]" style={{ color: `${COLORS.white}50` }}>
-                    {isPlaced ? "✓ Placed" : `Step ${comp.order}`}
+                    {isPlaced ? "✓ Placed" : "Drag to canvas"}
                   </p>
                 </div>
 
-                {/* Order Badge */}
-                <div 
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                  style={{ 
-                    background: isPlaced ? `${COLORS.yellow}30` : `${COLORS.yellow}20`,
-                    color: COLORS.yellow,
-                  }}
-                >
-                  {comp.order}
-                </div>
+                {/* Drag indicator */}
+                {!isPlaced && (
+                  <div 
+                    className="w-7 h-7 rounded-full flex items-center justify-center"
+                    style={{ 
+                      background: `${COLORS.white}10`,
+                    }}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke={`${COLORS.white}50`} strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                    </svg>
+                  </div>
+                )}
               </motion.div>
             );
           })}
@@ -851,42 +887,159 @@ export function OilGas2DCanvas({
               </g>
             </svg>
 
-            {/* Slot indicators */}
-            {slotPositions.map((slot, index) => {
-              const isOccupied = placedComponents.length > index;
-              const isNext = placedComponents.length === index;
-              const slotSize = isMobile ? 58 : 100;
-              return (
-                <motion.div
-                  key={index}
-                  className="absolute flex flex-col items-center justify-center rounded-lg md:rounded-xl border-2 border-dashed"
-                  style={{
-                    left: slot.x - slotSize / 2,
-                    top: slot.y - slotSize / 2,
-                    width: slotSize,
-                    height: slotSize,
-                    borderColor: isOccupied ? COLORS.yellow : isNext ? COLORS.yellow : `${COLORS.white}30`,
-                    background: isOccupied ? `${COLORS.yellow}15` : isNext ? `${COLORS.yellow}15` : `${COLORS.white}08`,
-                    boxShadow: isNext ? `0 0 15px ${COLORS.yellow}30` : 'none',
+            {/* Free drop zone indicator */}
+            {placedComponents.length === 0 && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div 
+                  className="px-6 py-3 rounded-xl border-2 border-dashed"
+                  style={{ 
+                    borderColor: `${COLORS.yellow}50`,
+                    background: `${COLORS.yellow}10`,
                   }}
-              animate={isNext && !isOccupied ? { 
-                scale: [1, 1.05, 1],
-                borderColor: [COLORS.yellow, COLORS.blue, COLORS.yellow],
-              } : {}}
-              transition={{ repeat: Infinity, duration: 1.5 }}
+                >
+                  <p className="text-sm font-medium" style={{ color: `${COLORS.yellow}90` }}>
+                    Drop components here
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Fault Type Legend - shown on canvas */}
+            <div 
+              className={`absolute ${isMobile ? 'top-2 left-2' : 'top-4 left-4'} pointer-events-none z-20`}
             >
-              {!isOccupied && (
-                <span className={`${isMobile ? 'text-sm' : 'text-sm'} font-bold`} style={{ color: isNext ? COLORS.yellow : `${COLORS.white}50` }}>
-                  {index + 1}
-                </span>
+              <div 
+                className={`${isMobile ? 'p-2' : 'p-3'} rounded-xl`}
+                style={{ 
+                  background: `${COLORS.indigo}95`,
+                  border: `1px solid ${COLORS.white}15`,
+                  backdropFilter: 'blur(8px)',
+                }}
+              >
+                <p className={`${isMobile ? 'text-[8px]' : 'text-[10px]'} font-bold mb-1.5`} style={{ color: COLORS.yellow }}>
+                  Fault Types
+                </p>
+                <div className={`flex flex-col ${isMobile ? 'gap-1' : 'gap-1.5'}`}>
+                  <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-1.5'}`}>
+                    <span className={`text-red-400 ${isMobile ? 'text-[8px]' : 'text-xs'}`}>→→</span>
+                    <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: lastFault === 'order' ? '#ef4444' : `${COLORS.white}80` }}>Order</span>
+                  </div>
+                  <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-1.5'}`}>
+                    <span className={`${isMobile ? 'w-2 h-2' : 'w-2.5 h-2.5'} rounded border border-dashed`} style={{ borderColor: COLORS.yellow }}></span>
+                    <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: lastFault === 'missing' ? COLORS.yellow : `${COLORS.white}80` }}>Missing</span>
+                  </div>
+                  <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-1.5'}`}>
+                    <svg className={`${isMobile ? 'w-2 h-2' : 'w-2.5 h-2.5'}`} fill="none" stroke="#ef4444" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728" />
+                    </svg>
+                    <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: lastFault === 'connection' ? '#ef4444' : `${COLORS.white}80` }}>Connection</span>
+                  </div>
+                  <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-1.5'}`}>
+                    <svg className={`${isMobile ? 'w-2 h-2' : 'w-2.5 h-2.5'}`} fill="#fbbf24" viewBox="0 0 24 24">
+                      <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                    </svg>
+                    <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: lastFault === 'safety' ? '#fbbf24' : `${COLORS.white}80` }}>Safety</span>
+                  </div>
+                  <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-1.5'}`}>
+                    <div className={`${isMobile ? 'w-2 h-2' : 'w-2.5 h-2.5'} rounded flex items-center justify-center`} style={{ background: '#3b82f6' }}>
+                      <span className={`${isMobile ? 'text-[5px]' : 'text-[6px]'} text-white font-bold`}>i</span>
+                    </div>
+                    <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: lastFault === 'efficiency' ? '#3b82f6' : `${COLORS.white}80` }}>Efficiency</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Active Fault Indicator - animated popup when fault occurs */}
+            <AnimatePresence>
+              {lastFault && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  className={`absolute ${isMobile ? 'top-2 right-2' : 'top-4 right-4'} z-30`}
+                >
+                  <div 
+                    className={`${isMobile ? 'px-3 py-2' : 'px-4 py-3'} rounded-xl flex items-center gap-2`}
+                    style={{ 
+                      background: lastFault === 'order' ? '#ef444420' 
+                        : lastFault === 'missing' ? `${COLORS.yellow}20`
+                        : lastFault === 'connection' ? '#ef444420'
+                        : lastFault === 'safety' ? '#fbbf2420'
+                        : '#3b82f620',
+                      border: `2px solid ${
+                        lastFault === 'order' ? '#ef4444' 
+                        : lastFault === 'missing' ? COLORS.yellow
+                        : lastFault === 'connection' ? '#ef4444'
+                        : lastFault === 'safety' ? '#fbbf24'
+                        : '#3b82f6'
+                      }`,
+                      boxShadow: `0 4px 20px ${
+                        lastFault === 'order' ? '#ef444440' 
+                        : lastFault === 'missing' ? `${COLORS.yellow}40`
+                        : lastFault === 'connection' ? '#ef444440'
+                        : lastFault === 'safety' ? '#fbbf2440'
+                        : '#3b82f640'
+                      }`,
+                    }}
+                  >
+                    {/* Fault Icon */}
+                    {lastFault === 'order' && (
+                      <span className={`${isMobile ? 'text-base' : 'text-lg'} text-red-400`}>→→</span>
+                    )}
+                    {lastFault === 'missing' && (
+                      <motion.span 
+                        animate={{ opacity: [1, 0.3, 1] }}
+                        transition={{ repeat: Infinity, duration: 0.8 }}
+                        className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} rounded border-2 border-dashed`} 
+                        style={{ borderColor: COLORS.yellow }}
+                      />
+                    )}
+                    {lastFault === 'connection' && (
+                      <svg className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} fill="none" stroke="#ef4444" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728" />
+                      </svg>
+                    )}
+                    {lastFault === 'safety' && (
+                      <svg className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} fill="#fbbf24" viewBox="0 0 24 24">
+                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                      </svg>
+                    )}
+                    {lastFault === 'efficiency' && (
+                      <div className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} rounded-full flex items-center justify-center`} style={{ background: '#3b82f6' }}>
+                        <span className={`${isMobile ? 'text-[8px]' : 'text-xs'} text-white font-bold`}>i</span>
+                      </div>
+                    )}
+                    
+                    {/* Fault Text */}
+                    <div>
+                      <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} font-bold`} style={{ 
+                        color: lastFault === 'order' ? '#ef4444' 
+                          : lastFault === 'missing' ? COLORS.yellow
+                          : lastFault === 'connection' ? '#ef4444'
+                          : lastFault === 'safety' ? '#fbbf24'
+                          : '#3b82f6'
+                      }}>
+                        {lastFault === 'order' && 'Order Fault'}
+                        {lastFault === 'missing' && 'Missing Part'}
+                        {lastFault === 'connection' && 'Wrong Connection'}
+                        {lastFault === 'safety' && 'Safety Fault'}
+                        {lastFault === 'efficiency' && 'Efficiency Issue'}
+                      </p>
+                      {faultComponent && (
+                        <p className={`${isMobile ? 'text-[8px]' : 'text-[10px]'}`} style={{ color: `${COLORS.white}70` }}>
+                          {COMPONENTS.find(c => c.id === faultComponent)?.name}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
               )}
-            </motion.div>
-          );
-        })}
+            </AnimatePresence>
 
         {/* Placed components */}
         {placedComponents.map((comp) => {
-          const compSize = isMobile ? 58 : 100;
+          const compSize = isMobile ? 42 : 100;
           return (
             <motion.div
               key={comp.id}
@@ -908,7 +1061,7 @@ export function OilGas2DCanvas({
         <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 5 }}>
           {placedComponents.slice(1).map((comp, index) => {
             const prevComp = placedComponents[index];
-            const pipeOffset = isMobile ? 25 : 40;
+            const pipeOffset = isMobile ? 18 : 40;
             return (
               <g key={comp.id}>
                 {/* Pipe */}
@@ -918,11 +1071,11 @@ export function OilGas2DCanvas({
                   x2={comp.x - pipeOffset}
                   y2={comp.y}
                   stroke={COLORS.steel}
-                  strokeWidth={isMobile ? 4 : 8}
+                  strokeWidth={isMobile ? 3 : 8}
                   strokeLinecap="round"
                 />
                 {/* Animated flow */}
-                <circle r={isMobile ? 3 : 4} fill={COLORS.yellow}>
+                <circle r={isMobile ? 2 : 4} fill={COLORS.yellow}>
                   <animate
                     attributeName="cx"
                     from={prevComp.x + pipeOffset}
@@ -1137,73 +1290,64 @@ export function OilGas2DCanvas({
           className="md:hidden fixed bottom-0 left-0 right-0 z-30"
           style={{ 
             background: COLORS.indigo,
-            borderTop: `3px solid ${COLORS.yellow}50`,
+            borderTop: `2px solid ${COLORS.yellow}50`,
             boxShadow: `0 -10px 50px rgba(0,0,0,0.5)`,
           }}
         >
-          <div className="px-2 py-3">
-            <div className="flex items-center justify-between mb-2 px-2">
-              <p className="text-xs font-bold" style={{ color: COLORS.yellow }}>
-                🛠️ Components
+          <div className="px-2 py-2">
+            {/* Single line: Label + Components in a row */}
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-bold flex-shrink-0" style={{ color: COLORS.yellow }}>
+                🛠️
               </p>
-              <p className="text-[10px]" style={{ color: `${COLORS.white}60` }}>
-                {placedComponents.length}/{CORRECT_SEQUENCE.length} placed
-              </p>
-            </div>
-            <div className="flex justify-center gap-3 overflow-x-auto pb-2 px-1" style={{ scrollSnapType: 'x mandatory' }}>
-              {COMPONENTS.map((comp) => {
-                const isPlaced = placedComponents.some(p => p.id === comp.id);
-                return (
-                  <motion.div
-                    key={comp.id}
-                    draggable={!isPlaced && !isComplete}
-                    onDragStart={() => handleDragStart(comp.id)}
-                    whileTap={{ scale: isPlaced ? 1 : 0.9 }}
-                    whileHover={{ scale: isPlaced ? 1 : 1.05 }}
-                    className={`relative flex flex-col items-center gap-1 p-1.5 rounded-lg transition-all ${
-                      isPlaced ? 'opacity-30' : 'cursor-grab active:cursor-grabbing'
-                    }`}
-                    style={{ 
-                      background: isPlaced ? `${COLORS.white}05` : `${COLORS.white}12`,
-                      border: `1.5px solid ${isPlaced ? `${COLORS.white}10` : `${COLORS.yellow}40`}`,
-                      minWidth: 56,
-                      scrollSnapAlign: 'start',
-                    }}
-                  >
-                    <div 
-                      className="w-11 h-11 rounded-lg flex items-center justify-center"
+              <div className="flex items-center gap-1.5 flex-1 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                {shuffledComponents.map((comp) => {
+                  const isPlaced = placedComponents.some((p) => p.componentId === comp.id);
+                  return (
+                    <motion.div
+                      key={comp.id}
+                      draggable={!isPlaced && !isComplete}
+                      onDragStart={() => handleDragStart(comp.id)}
+                      whileTap={{ scale: isPlaced ? 1 : 0.9 }}
+                      className={`relative flex-shrink-0 flex flex-col items-center p-1 rounded-lg transition-all ${
+                        isPlaced ? 'opacity-40' : 'cursor-grab active:cursor-grabbing'
+                      }`}
                       style={{ 
-                        background: isPlaced 
-                          ? `${COLORS.white}10` 
-                          : COLORS.blue,
-                        boxShadow: isPlaced ? 'none' : `0 2px 8px ${COLORS.blue}40`,
+                        background: isPlaced ? `${COLORS.white}05` : `${COLORS.white}10`,
+                        border: `1px solid ${isPlaced ? `${COLORS.white}10` : `${COLORS.yellow}30`}`,
                       }}
                     >
-                      <ComponentIcon componentId={comp.id} size={28} />
-                    </div>
-                    <span 
-                      className="text-[8px] font-medium text-center leading-tight"
-                      style={{ color: isPlaced ? `${COLORS.white}40` : COLORS.white }}
-                    >
-                      {comp.name.split(' ')[0]}
-                    </span>
-                    {isPlaced && (
                       <div 
-                        className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
-                        style={{ background: COLORS.yellow }}
+                        className="w-9 h-9 rounded-md flex items-center justify-center"
+                        style={{ 
+                          background: isPlaced ? `${COLORS.white}10` : COLORS.blue,
+                        }}
                       >
-                        <svg className="w-2.5 h-2.5" fill={COLORS.white} viewBox="0 0 24 24">
-                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
+                        {isPlaced ? (
+                          <svg className="w-4 h-4" fill={COLORS.yellow} viewBox="0 0 24 24">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                          </svg>
+                        ) : (
+                          <ComponentIcon componentId={comp.id} size={22} />
+                        )}
                       </div>
-                    )}
-                  </motion.div>
-                );
-              })}
+                      <span 
+                        className="text-[7px] font-medium text-center leading-tight mt-0.5 w-10 truncate"
+                        style={{ color: isPlaced ? `${COLORS.white}40` : COLORS.white }}
+                      >
+                        {comp.name.split(' ')[0]}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] font-bold flex-shrink-0 px-1.5 py-0.5 rounded" style={{ color: COLORS.yellow, background: `${COLORS.yellow}20` }}>
+                {placedComponents.length}/{CORRECT_SEQUENCE.length}
+              </p>
             </div>
           </div>
           {/* Safe area padding for notched phones */}
-          <div className="h-[env(safe-area-inset-bottom)]" style={{ background: COLORS.darkBlue }} />
+          <div className="h-[env(safe-area-inset-bottom)]" style={{ background: COLORS.indigo }} />
         </motion.div>
       </div>
 
@@ -1274,9 +1418,8 @@ export function OilGas2DCanvas({
                           </div>
                           <div className="flex-1">
                             <p className="text-sm font-semibold" style={{ color: COLORS.white }}>{comp.name}</p>
-                            <p className="text-[10px]" style={{ color: `${COLORS.white}50` }}>Step {comp.order}</p>
+                            <p className="text-[10px]" style={{ color: `${COLORS.white}50` }}>Drag to canvas</p>
                           </div>
-                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: `${COLORS.yellow}20`, color: COLORS.yellow }}>{comp.order}</div>
                         </div>
                       ))}
                     </div>
@@ -1386,20 +1529,6 @@ export function OilGas2DCanvas({
                       <p className="text-[10px] font-semibold" style={{ color: COLORS.yellow }}>
                         ↑ Drag components from here ↑
                       </p>
-                      <div className="flex justify-center gap-2 mt-2">
-                        {COMPONENTS.slice(0, 4).map((comp) => (
-                          <div
-                            key={comp.id}
-                            className="w-10 h-10 rounded-lg flex items-center justify-center"
-                            style={{ background: COLORS.blue }}
-                          >
-                            <ComponentIcon componentId={comp.id} size={20} />
-                          </div>
-                        ))}
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${COLORS.white}20` }}>
-                          <span className="text-xs" style={{ color: COLORS.white }}>+3</span>
-                        </div>
-                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -1415,20 +1544,16 @@ export function OilGas2DCanvas({
                     }}
                   >
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="flex gap-3">
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className="w-12 h-12 rounded-lg border-2 border-dashed flex items-center justify-center" style={{ borderColor: i === 1 ? COLORS.yellow : `${COLORS.white}30` }}>
-                            <span className="text-xs font-bold" style={{ color: COLORS.white }}>{i}</span>
-                          </div>
-                        ))}
-                      </div>
+                      <p className="text-sm font-medium px-4 py-2 rounded-lg" style={{ background: `${COLORS.yellow}20`, color: COLORS.yellow }}>
+                        Drop Zone
+                      </p>
                     </div>
                   </motion.div>
                 )}
 
                 {/* Tutorial Card */}
                 <div 
-                  className="rounded-2xl p-5 text-center"
+                  className="rounded-2xl p-4 text-center max-h-[80vh] overflow-y-auto"
                   style={{ 
                     background: COLORS.indigo,
                     border: `3px solid ${COLORS.yellow}`,
@@ -1436,7 +1561,7 @@ export function OilGas2DCanvas({
                   }}
                 >
                   {/* Step dots */}
-                  <div className="flex items-center justify-center gap-2 mb-4">
+                  <div className="flex items-center justify-center gap-2 mb-3">
                     {MOBILE_TUTORIAL_STEPS.map((_, i) => (
                       <div
                         key={i}
@@ -1449,42 +1574,53 @@ export function OilGas2DCanvas({
                     ))}
                   </div>
 
-                  {/* Icon */}
-                  <div 
-                    className="w-14 h-14 mx-auto mb-3 rounded-xl flex items-center justify-center"
-                    style={{ background: COLORS.yellow }}
-                  >
-                    {currentTutorialStep.icon === "welcome" && (
-                      <svg className="w-7 h-7" fill={COLORS.darkBlue} viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                      </svg>
-                    )}
-                    {currentTutorialStep.icon === "toolbox" && (
-                      <svg className="w-7 h-7" fill={COLORS.darkBlue} viewBox="0 0 24 24">
-                        <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
-                      </svg>
-                    )}
-                    {currentTutorialStep.icon === "canvas" && (
-                      <svg className="w-7 h-7" fill={COLORS.darkBlue} viewBox="0 0 24 24">
-                        <path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM5 15h14v3H5z"/>
-                      </svg>
-                    )}
-                    {currentTutorialStep.icon === "start" && (
-                      <svg className="w-7 h-7" fill={COLORS.darkBlue} viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                      </svg>
-                    )}
-                  </div>
-
                   {/* Title */}
                   <h2 className="text-lg font-bold mb-2" style={{ color: COLORS.yellow }}>
                     {currentTutorialStep.title}
                   </h2>
 
                   {/* Description */}
-                  <p className="text-sm leading-relaxed mb-5" style={{ color: `${COLORS.white}dd` }}>
+                  <p className="text-xs leading-relaxed mb-3" style={{ color: `${COLORS.white}dd` }}>
                     {currentTutorialStep.description}
                   </p>
+
+                  {/* Show fault types and rules only on welcome and final step */}
+                  {(tutorialStep === 0 || tutorialStep === MOBILE_TUTORIAL_STEPS.length - 1) && (
+                    <>
+                      {/* Fault Types Reference */}
+                      <div className="mb-3 p-2.5 rounded-xl text-left" style={{ background: `${COLORS.white}08`, border: `1px solid ${COLORS.white}15` }}>
+                    <h3 className="text-xs font-bold mb-2" style={{ color: COLORS.yellow }}>Fault Types</h3>
+                    <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-red-400 text-xs">→→</span>
+                        <span style={{ color: COLORS.white }}>Order Fault</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 rounded border border-dashed animate-pulse" style={{ borderColor: COLORS.yellow }}></span>
+                        <span style={{ color: COLORS.white }}>Missing Part</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <svg className="w-3 h-3" fill="none" stroke="#ef4444" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728" />
+                        </svg>
+                        <span style={{ color: COLORS.white }}>Wrong Connection</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <svg className="w-3 h-3" fill="#fbbf24" viewBox="0 0 24 24">
+                          <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                        </svg>
+                        <span style={{ color: COLORS.white }}>Safety Fault</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 col-span-2">
+                        <div className="w-3 h-3 rounded flex items-center justify-center" style={{ background: '#3b82f6' }}>
+                          <span className="text-[6px] text-white font-bold">i</span>
+                        </div>
+                        <span style={{ color: COLORS.white }}>Efficiency Issue</span>
+                      </div>
+                    </div>
+                  </div>
+                    </>
+                  )}
 
                   {/* Buttons */}
                   <div className="flex gap-3">
@@ -1526,7 +1662,7 @@ export function OilGas2DCanvas({
               }}
             >
               {/* Step indicator */}
-              <div className="flex items-center justify-center gap-2 mb-6">
+              <div className="flex items-center justify-center gap-2 mb-4">
                 {TUTORIAL_STEPS.map((_, i) => (
                   <div
                     key={i}
@@ -1539,50 +1675,53 @@ export function OilGas2DCanvas({
                 ))}
               </div>
 
-              {/* Icon */}
-              <div 
-                className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center"
-                style={{ 
-                  background: COLORS.yellow,
-                  boxShadow: `0 8px 25px ${COLORS.yellow}40`,
-                }}
-              >
-                {tutorialStep === 0 && (
-                  <svg className="w-10 h-10" fill={COLORS.darkBlue} viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                )}
-                {tutorialStep === 1 && (
-                  <svg className="w-10 h-10" fill={COLORS.darkBlue} viewBox="0 0 24 24">
-                    <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
-                  </svg>
-                )}
-                {tutorialStep === 2 && (
-                  <svg className="w-10 h-10" fill={COLORS.darkBlue} viewBox="0 0 24 24">
-                    <path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM5 15h14v3H5z"/>
-                  </svg>
-                )}
-                {tutorialStep === 3 && (
-                  <svg className="w-10 h-10" fill={COLORS.darkBlue} viewBox="0 0 24 24">
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-                  </svg>
-                )}
-                {tutorialStep === 4 && (
-                  <svg className="w-10 h-10" fill={COLORS.darkBlue} viewBox="0 0 24 24">
-                    <path d="M9 11.75c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zm6 0c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86 2.36-1.05 4.23-2.98 5.21-5.37C11.07 8.33 14.05 10 17.42 10c.78 0 1.53-.09 2.25-.26.21.71.33 1.47.33 2.26 0 4.41-3.59 8-8 8z"/>
-                  </svg>
-                )}
-              </div>
-
               {/* Title */}
-              <h2 className="text-2xl font-bold mb-4" style={{ color: COLORS.yellow }}>
+              <h2 className="text-2xl font-bold mb-3" style={{ color: COLORS.yellow }}>
                 {currentTutorialStep.title}
               </h2>
 
               {/* Description */}
-              <p className="text-base leading-relaxed mb-8" style={{ color: `${COLORS.white}e0` }}>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: `${COLORS.white}e0` }}>
                 {currentTutorialStep.description}
               </p>
+
+              {/* Show fault types and rules only on welcome and final step */}
+              {(tutorialStep === 0 || tutorialStep === TUTORIAL_STEPS.length - 1) && (
+                <>
+                  {/* Fault Types Reference */}
+                  <div className="mb-4 p-3 rounded-xl text-left" style={{ background: `${COLORS.white}08`, border: `1px solid ${COLORS.white}15` }}>
+                    <h3 className="text-sm font-bold mb-2" style={{ color: COLORS.yellow }}>Fault Types</h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-red-400">→→</span>
+                        <span style={{ color: COLORS.white }}>Order Fault</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-4 h-4 rounded border-2 border-dashed animate-pulse" style={{ borderColor: COLORS.yellow }}></span>
+                        <span style={{ color: COLORS.white }}>Missing Part</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="#ef4444" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728" />
+                        </svg>
+                        <span style={{ color: COLORS.white }}>Wrong Connection</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="#fbbf24" viewBox="0 0 24 24">
+                          <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                        </svg>
+                        <span style={{ color: COLORS.white }}>Safety Fault</span>
+                      </div>
+                      <div className="flex items-center gap-2 col-span-2">
+                        <div className="w-4 h-4 rounded flex items-center justify-center" style={{ background: '#3b82f6' }}>
+                          <span className="text-[8px] text-white font-bold">i</span>
+                        </div>
+                        <span style={{ color: COLORS.white }}>Efficiency Issue</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Buttons */}
               <div className="flex items-center justify-center gap-4">
@@ -1642,7 +1781,7 @@ export function OilGas2DCanvas({
                 </svg>
               </div>
               <h3 className="text-xl font-bold mb-3" style={{ color: COLORS.yellow }}>
-                Engineering Hint
+                Hint
               </h3>
               <p className="text-base mb-4" style={{ color: COLORS.white }}>
                 {hintMessage}
@@ -1705,16 +1844,26 @@ export function OilGas2DCanvas({
                 </div>
               </div>
               <button
-                onClick={onExit}
-                className="px-8 py-3 rounded-lg font-bold text-lg transition-transform hover:scale-105"
+                onClick={() => setShowThankYou(true)}
+                className="w-full px-8 py-4 rounded-lg font-bold text-lg transition-transform hover:scale-105"
                 style={{ background: COLORS.yellow, color: COLORS.indigo }}
               >
-                Continue
+                Continue →
               </button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* THANK YOU OVERLAY */}
+      <ThankYouOverlay
+        isVisible={showThankYou}
+        userName={userName}
+        score={score}
+        grade={score >= 9 ? "A+" : score >= 8 ? "A" : score >= 7 ? "B+" : score >= 6 ? "B" : score >= 5 ? "C" : "D"}
+        sector={userSector}
+        onComplete={() => onExit?.()}
+      />
 
       {/* Time's Up Modal */}
       <AnimatePresence>
