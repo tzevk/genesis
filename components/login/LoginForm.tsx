@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { EDUCATION_LEVELS, LOCATIONS } from "@/lib/constants";
 import { validateLoginForm, loginUser } from "@/lib/utils";
 import { FormErrors } from "@/lib/types";
-import { ThankYouGlobe } from "./ThankYouGlobe";
+import { ThankYouPhotobooth } from "./ThankYouPhotobooth";
 
 type UserType = "student" | "professional";
 type ScanStep = "idle" | "options" | "scanning" | "confirm-front" | "confirm-back" | "complete";
@@ -241,15 +241,14 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
     }
   };
 
-  // Show the thank you globe screen - stays on this screen permanently
+  // Show the thank you photobooth screen - stays on this screen permanently
   if (showThankYouGlobe) {
     return (
-      <ThankYouGlobe
+      <ThankYouPhotobooth
         userName={formData.name}
         companyName={formData.companyName}
-        companyLocation={formData.companyLocation} onContinue={function (): void {
-          throw new Error("Function not implemented.");
-        } }      />
+        companyLocation={formData.companyLocation}
+      />
     );
   }
 
