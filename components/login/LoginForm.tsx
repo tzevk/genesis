@@ -16,6 +16,43 @@ interface LoginFormProps {
   onStartSimulation?: () => void;
 }
 
+// Compress image to reduce file size for upload
+const compressImage = (file: File, maxWidth = 800, quality = 0.7): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.createElement("img");
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+        
+        // Scale down if larger than maxWidth
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Could not get canvas context"));
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
+        resolve(compressedBase64);
+      };
+      img.onerror = () => reject(new Error("Failed to load image"));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+};
+
 export function LoginForm({ onStartSimulation }: LoginFormProps) {
   const router = useRouter();
   const [userType, setUserType] = useState<UserType>("student");
@@ -40,7 +77,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
 
-  const handleImageUpload = (
+  const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     side: "front" | "back"
   ) => {
@@ -50,24 +87,28 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
       setIsScanning(true);
       setScanStep("scanning");
       
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
+      try {
+        // Compress image before storing
+        const compressedBase64 = await compressImage(file, 800, 0.7);
         
         // Simulate scanning delay for futuristic effect
         setTimeout(() => {
           if (side === "front") {
-            setBusinessCardFront(base64);
+            setBusinessCardFront(compressedBase64);
             setIsScanning(false);
             setScanStep("confirm-front");
           } else {
-            setBusinessCardBack(base64);
+            setBusinessCardBack(compressedBase64);
             setIsScanning(false);
             setScanStep("confirm-back");
           }
         }, 1500);
-      };
-      reader.readAsDataURL(file);
+      } catch (error) {
+        console.error("Image compression failed:", error);
+        setIsScanning(false);
+        setScanStep("options");
+        setErrors({ businessCard: "Failed to process image. Please try again." });
+      }
     }
     // Reset input value so same file can be selected again
     e.target.value = "";
