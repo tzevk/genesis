@@ -21,45 +21,43 @@ const COLORS = {
   glassBorder: "rgba(255, 255, 255, 0.15)",
 };
 
-// Building floor structure with slots
+// Building floor structure with slots - Water Tank Filling Mechanism
 const BUILDING_STRUCTURE = {
   roof: {
-    name: "Roof",
+    name: "Storage",
     color: COLORS.teal,
     slots: [
       { id: "roof-1", componentId: "water-tank", label: "Water Tank" },
-      { id: "roof-2", componentId: "cooling-unit", label: "Cooling Unit" },
+      { id: "roof-2", componentId: "level-sensor", label: "Level Sensor" },
     ],
   },
   floor2: {
-    name: "Floor 2",
+    name: "Distribution",
     color: COLORS.amber,
     slots: [
-      { id: "floor2-1", componentId: "electrical-panel", label: "Electrical Panel" },
-      { id: "floor2-2", componentId: "lighting", label: "Lighting" },
+      { id: "floor2-1", componentId: "pipeline", label: "Pipeline" },
     ],
   },
   floor1: {
-    name: "Floor 1",
+    name: "Source",
     color: COLORS.blue,
     slots: [
-      { id: "floor1-1", componentId: "pump", label: "Pump" },
-      { id: "floor1-2", componentId: "water-supply", label: "Water Supply" },
+      { id: "floor1-1", componentId: "water-source", label: "Water Source" },
+      { id: "floor1-2", componentId: "pump", label: "Pump" },
     ],
   },
 };
 
-// MEP Components - ordered for building construction (bottom to top)
+// MEP Components - Water Tank Filling Mechanism (ordered for construction)
 const COMPONENTS = [
+  { id: "water-source", name: "Water Source", floor: "floor1", type: "plumbing" },
   { id: "pump", name: "Pump", floor: "floor1", type: "mechanical" },
-  { id: "water-supply", name: "Water Supply", floor: "floor1", type: "plumbing" },
-  { id: "electrical-panel", name: "Electrical Panel", floor: "floor2", type: "electrical" },
-  { id: "lighting", name: "Lighting", floor: "floor2", type: "electrical" },
+  { id: "pipeline", name: "Pipeline", floor: "floor2", type: "plumbing" },
   { id: "water-tank", name: "Water Tank", floor: "roof", type: "plumbing" },
-  { id: "cooling-unit", name: "Cooling Unit", floor: "roof", type: "mechanical" },
+  { id: "level-sensor", name: "Level Sensor", floor: "roof", type: "electrical" },
 ];
 
-const CORRECT_SEQUENCE = ["pump", "water-supply", "electrical-panel", "lighting", "water-tank", "cooling-unit"];
+const CORRECT_SEQUENCE = ["water-source", "pump", "pipeline", "water-tank", "level-sensor"];
 
 // Shuffle array helper
 function shuffleArray<T>(array: T[]): T[] {
@@ -79,6 +77,32 @@ interface PlacedComponent {
 }
 
 // ============ MEP COMPONENT ICONS ============
+
+function WaterSourceIcon({ size = 60 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 60 60">
+      {/* Ground/reservoir */}
+      <rect x="5" y="40" width="50" height="15" rx="3" fill={COLORS.deepGreen} stroke={COLORS.blue} strokeWidth="2" />
+      {/* Water in reservoir */}
+      <rect x="8" y="43" width="44" height="9" rx="2" fill={COLORS.blue} opacity="0.6">
+        <animate attributeName="opacity" values="0.6;0.4;0.6" dur="2s" repeatCount="indefinite" />
+      </rect>
+      {/* Wave effect */}
+      <path d="M10 45 Q20 42 30 45 T50 45" fill="none" stroke={COLORS.blue} strokeWidth="1.5" opacity="0.8">
+        <animate attributeName="d" values="M10 45 Q20 42 30 45 T50 45;M10 45 Q20 48 30 45 T50 45;M10 45 Q20 42 30 45 T50 45" dur="2s" repeatCount="indefinite" />
+      </path>
+      {/* Inlet pipe */}
+      <rect x="25" y="10" width="10" height="30" rx="2" fill={COLORS.teal} opacity="0.8" />
+      {/* Water drops */}
+      <circle cx="30" cy="20" r="3" fill={COLORS.blue}>
+        <animate attributeName="cy" from="15" to="35" dur="1s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="1;0.5;0" dur="1s" repeatCount="indefinite" />
+      </circle>
+      {/* Source label indicator */}
+      <circle cx="30" cy="8" r="5" fill={COLORS.emerald} opacity="0.8" />
+    </svg>
+  );
+}
 
 function PumpIcon({ size = 60 }: { size?: number }) {
   return (
@@ -108,77 +132,25 @@ function PumpIcon({ size = 60 }: { size?: number }) {
   );
 }
 
-function WaterSupplyIcon({ size = 60 }: { size?: number }) {
+function PipelineIcon({ size = 60 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 60 60">
-      {/* Main pipe */}
-      <rect x="10" y="25" width="40" height="10" rx="3" fill={COLORS.blue} />
-      {/* Valve */}
-      <rect x="25" y="20" width="10" height="20" rx="2" fill={COLORS.deepGreen} stroke={COLORS.blue} strokeWidth="1.5" />
-      <circle cx="30" cy="30" r="5" fill={COLORS.blue} opacity="0.6" />
-      {/* Handle */}
-      <rect x="22" y="16" width="16" height="4" rx="1" fill={COLORS.teal} />
-      {/* Flow indicators */}
-      <circle cx="18" cy="30" r="2" fill={COLORS.coolWhite}>
-        <animate attributeName="cx" from="14" to="46" dur="1.5s" repeatCount="indefinite" />
-        <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite" />
+      {/* Vertical pipe section */}
+      <rect x="25" y="5" width="10" height="20" rx="2" fill={COLORS.teal} stroke={COLORS.emerald} strokeWidth="1" />
+      {/* Horizontal pipe section */}
+      <rect x="10" y="25" width="40" height="10" rx="2" fill={COLORS.teal} stroke={COLORS.emerald} strokeWidth="1" />
+      {/* Another vertical section */}
+      <rect x="25" y="35" width="10" height="20" rx="2" fill={COLORS.teal} stroke={COLORS.emerald} strokeWidth="1" />
+      {/* Elbow joints */}
+      <circle cx="30" cy="30" r="8" fill={COLORS.deepGreen} stroke={COLORS.emerald} strokeWidth="1.5" />
+      {/* Flow indicator */}
+      <circle cx="15" cy="30" r="2" fill={COLORS.blue}>
+        <animate attributeName="cx" from="12" to="48" dur="1.5s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="1;0.5;1" dur="1.5s" repeatCount="indefinite" />
       </circle>
-      {/* Connectors */}
-      <rect x="5" y="27" width="6" height="6" rx="1" fill={COLORS.glass} stroke={COLORS.glassBorder} />
-      <rect x="49" y="27" width="6" height="6" rx="1" fill={COLORS.glass} stroke={COLORS.glassBorder} />
-    </svg>
-  );
-}
-
-function ElectricalPanelIcon({ size = 60 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 60 60">
-      {/* Panel body */}
-      <rect x="12" y="8" width="36" height="44" rx="3" fill={COLORS.deepGreen} stroke={COLORS.amber} strokeWidth="2" />
-      {/* Panel door */}
-      <rect x="15" y="11" width="30" height="38" rx="2" fill={COLORS.glass} stroke={COLORS.glassBorder} />
-      {/* Circuit breakers */}
-      <rect x="20" y="16" width="8" height="6" rx="1" fill={COLORS.amber} />
-      <rect x="32" y="16" width="8" height="6" rx="1" fill={COLORS.amber} />
-      <rect x="20" y="26" width="8" height="6" rx="1" fill={COLORS.emerald} />
-      <rect x="32" y="26" width="8" height="6" rx="1" fill={COLORS.emerald} />
-      <rect x="20" y="36" width="8" height="6" rx="1" fill={COLORS.red} opacity="0.8" />
-      <rect x="32" y="36" width="8" height="6" rx="1" fill={COLORS.amber} />
-      {/* Main switch */}
-      <rect x="26" y="46" width="8" height="4" rx="1" fill={COLORS.red}>
-        <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
-      </rect>
-      {/* Status LED */}
-      <circle cx="48" cy="12" r="3" fill={COLORS.emerald}>
-        <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
-      </circle>
-    </svg>
-  );
-}
-
-function LightingIcon({ size = 60 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 60 60">
-      {/* Fixture base */}
-      <rect x="15" y="8" width="30" height="8" rx="2" fill={COLORS.glass} stroke={COLORS.glassBorder} />
-      {/* Light panel */}
-      <rect x="18" y="16" width="24" height="12" rx="2" fill={COLORS.amber} opacity="0.9">
-        <animate attributeName="opacity" values="0.9;0.6;0.9" dur="2s" repeatCount="indefinite" />
-      </rect>
-      {/* Light rays */}
-      <g opacity="0.6">
-        <line x1="22" y1="28" x2="18" y2="40" stroke={COLORS.amber} strokeWidth="2" strokeLinecap="round">
-          <animate attributeName="opacity" values="0.6;0.2;0.6" dur="1.5s" repeatCount="indefinite" />
-        </line>
-        <line x1="30" y1="28" x2="30" y2="42" stroke={COLORS.amber} strokeWidth="2" strokeLinecap="round">
-          <animate attributeName="opacity" values="0.6;0.2;0.6" dur="1.5s" repeatCount="indefinite" begin="0.2s" />
-        </line>
-        <line x1="38" y1="28" x2="42" y2="40" stroke={COLORS.amber} strokeWidth="2" strokeLinecap="round">
-          <animate attributeName="opacity" values="0.6;0.2;0.6" dur="1.5s" repeatCount="indefinite" begin="0.4s" />
-        </line>
-      </g>
-      {/* Mounting wire */}
-      <line x1="30" y1="4" x2="30" y2="8" stroke={COLORS.glassBorder} strokeWidth="2" />
+      {/* Pipe connectors */}
+      <rect x="22" y="2" width="16" height="4" rx="1" fill={COLORS.glassBorder} />
+      <rect x="22" y="54" width="16" height="4" rx="1" fill={COLORS.glassBorder} />
     </svg>
   );
 }
@@ -190,8 +162,8 @@ function WaterTankIcon({ size = 60 }: { size?: number }) {
       <rect x="12" y="12" width="36" height="36" rx="4" fill={COLORS.deepGreen} stroke={COLORS.blue} strokeWidth="2" />
       {/* Water level */}
       <rect x="15" y="24" width="30" height="21" rx="2" fill={COLORS.blue} opacity="0.5">
-        <animate attributeName="height" values="21;18;21" dur="3s" repeatCount="indefinite" />
-        <animate attributeName="y" values="24;27;24" dur="3s" repeatCount="indefinite" />
+        <animate attributeName="height" values="10;21;10" dur="4s" repeatCount="indefinite" />
+        <animate attributeName="y" values="35;24;35" dur="4s" repeatCount="indefinite" />
       </rect>
       {/* Wave effect */}
       <path d="M15 26 Q22 23 30 26 T45 26" fill="none" stroke={COLORS.blue} strokeWidth="1.5" opacity="0.8">
@@ -199,71 +171,70 @@ function WaterTankIcon({ size = 60 }: { size?: number }) {
       </path>
       {/* Lid */}
       <rect x="10" y="8" width="40" height="6" rx="2" fill={COLORS.teal} />
-      {/* Level indicator */}
-      <rect x="48" y="20" width="4" height="24" rx="1" fill={COLORS.glass} stroke={COLORS.glassBorder} />
-      <rect x="49" y="28" width="2" height="15" rx="0.5" fill={COLORS.blue}>
-        <animate attributeName="height" values="15;12;15" dur="3s" repeatCount="indefinite" />
-        <animate attributeName="y" values="28;31;28" dur="3s" repeatCount="indefinite" />
-      </rect>
-      {/* Inlet pipe */}
-      <rect x="20" y="4" width="6" height="6" rx="1" fill={COLORS.blue} opacity="0.7" />
     </svg>
   );
 }
 
-function CoolingUnitIcon({ size = 60 }: { size?: number }) {
+function LevelSensorIcon({ size = 60 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 60 60">
-      {/* Unit body */}
-      <rect x="8" y="15" width="44" height="35" rx="4" fill={COLORS.deepGreen} stroke={COLORS.teal} strokeWidth="2" />
-      {/* Fan grill */}
-      <circle cx="30" cy="32" r="14" fill={COLORS.glass} stroke={COLORS.glassBorder} />
-      {/* Fan blades */}
-      <g>
-        <ellipse cx="30" cy="25" rx="3" ry="8" fill={COLORS.teal}>
-          <animateTransform attributeName="transform" type="rotate" from="0 30 32" to="360 30 32" dur="0.8s" repeatCount="indefinite" />
-        </ellipse>
-        <ellipse cx="30" cy="39" rx="3" ry="8" fill={COLORS.teal}>
-          <animateTransform attributeName="transform" type="rotate" from="0 30 32" to="360 30 32" dur="0.8s" repeatCount="indefinite" />
-        </ellipse>
-        <ellipse cx="23" cy="32" rx="8" ry="3" fill={COLORS.teal}>
-          <animateTransform attributeName="transform" type="rotate" from="0 30 32" to="360 30 32" dur="0.8s" repeatCount="indefinite" />
-        </ellipse>
-        <ellipse cx="37" cy="32" rx="8" ry="3" fill={COLORS.teal}>
-          <animateTransform attributeName="transform" type="rotate" from="0 30 32" to="360 30 32" dur="0.8s" repeatCount="indefinite" />
-        </ellipse>
-      </g>
-      {/* Center hub */}
-      <circle cx="30" cy="32" r="4" fill={COLORS.deepGreen} stroke={COLORS.teal} strokeWidth="1" />
-      {/* Control panel */}
-      <rect x="12" y="46" width="16" height="4" rx="1" fill={COLORS.glass} />
-      <circle cx="16" cy="48" r="1.5" fill={COLORS.emerald} />
-      <circle cx="22" cy="48" r="1.5" fill={COLORS.amber} />
-      {/* Frost indicator */}
-      <circle cx="44" cy="48" r="3" fill={COLORS.teal} opacity="0.6">
-        <animate attributeName="opacity" values="0.6;0.3;0.6" dur="1.5s" repeatCount="indefinite" />
+      {/* Sensor body */}
+      <rect x="20" y="10" width="20" height="40" rx="3" fill={COLORS.deepGreen} stroke={COLORS.amber} strokeWidth="2" />
+      {/* Display screen */}
+      <rect x="23" y="14" width="14" height="10" rx="2" fill={COLORS.glass} stroke={COLORS.glassBorder} />
+      {/* Level bars */}
+      <rect x="25" y="28" width="10" height="3" rx="1" fill={COLORS.emerald}>
+        <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
+      </rect>
+      <rect x="25" y="33" width="10" height="3" rx="1" fill={COLORS.emerald}>
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" />
+      </rect>
+      <rect x="25" y="38" width="10" height="3" rx="1" fill={COLORS.amber}>
+        <animate attributeName="opacity" values="1;0.5;1" dur="1.5s" repeatCount="indefinite" />
+      </rect>
+      <rect x="25" y="43" width="10" height="3" rx="1" fill={COLORS.red} opacity="0.5" />
+      {/* Probe */}
+      <rect x="28" y="50" width="4" height="8" rx="1" fill={COLORS.teal} />
+      {/* Status LED */}
+      <circle cx="30" cy="17" r="2" fill={COLORS.emerald}>
+        <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
       </circle>
+      {/* Connection wires */}
+      <line x1="15" y1="25" x2="20" y2="25" stroke={COLORS.amber} strokeWidth="2" />
+      <line x1="40" y1="25" x2="45" y2="25" stroke={COLORS.amber} strokeWidth="2" />
     </svg>
   );
 }
+
 
 // Component icon renderer
 function ComponentIcon({ componentId, size = 60 }: { componentId: string; size?: number }) {
   switch (componentId) {
+    case "water-source": return <WaterSourceIcon size={size} />;
     case "pump": return <PumpIcon size={size} />;
-    case "water-supply": return <WaterSupplyIcon size={size} />;
-    case "electrical-panel": return <ElectricalPanelIcon size={size} />;
-    case "lighting": return <LightingIcon size={size} />;
+    case "pipeline": return <PipelineIcon size={size} />;
     case "water-tank": return <WaterTankIcon size={size} />;
-    case "cooling-unit": return <CoolingUnitIcon size={size} />;
+    case "level-sensor": return <LevelSensorIcon size={size} />;
     default: return null;
   }
 }
 
-// Get type color - all components use same color
+// Get type color based on component type
 function getTypeColor(type: string): string {
-  // Using emerald for all MEP components for consistency
-  return COLORS.emerald;
+  switch (type) {
+    case 'water-source':
+      return COLORS.blue;
+    case 'pump':
+      return COLORS.emerald;
+    case 'pipeline':
+      return COLORS.teal;
+    case 'water-tank':
+      return COLORS.blue;
+    case 'level-sensor':
+      return COLORS.amber;
+    default:
+      return COLORS.emerald;
+  }
 }
 
 // ============ MAIN CANVAS COMPONENT ============
@@ -336,50 +307,50 @@ export function MEP2DCanvas({
     feedback: string[];
   } | null>(null);
 
-  // Event definitions
+  // Event definitions - Water Tank Filling System events
   const EVENTS = useMemo(() => [
     {
-      id: "high-demand",
-      title: "Peak Demand Alert",
-      description: "Building occupancy hits 100%. HVAC and electrical systems under heavy load.",
+      id: "pump-overload",
+      title: "Pump Overload Alert",
+      description: "Pump motor temperature rising. High flow resistance detected in pipeline.",
       type: "demand" as const,
       options: [
-        { id: "a", label: "Increase pump speed & activate backup cooling", correct: true, points: 2 },
-        { id: "b", label: "Reduce lighting to 50%", correct: false, points: 0 },
-        { id: "c", label: "Shut down non-essential systems", correct: false, points: 1 },
+        { id: "a", label: "Reduce pump speed & check for blockage", correct: true, points: 2 },
+        { id: "b", label: "Increase pump power", correct: false, points: 0 },
+        { id: "c", label: "Shut down the system completely", correct: false, points: 1 },
       ],
     },
     {
-      id: "power-surge",
-      title: "Power Surge Detected",
-      description: "Voltage spike detected in the main electrical panel. Risk of equipment damage.",
+      id: "tank-overflow",
+      title: "Tank Overflow Warning",
+      description: "Water level approaching maximum capacity. Level sensor at 95%.",
       type: "surge" as const,
       options: [
-        { id: "a", label: "Disconnect sensitive equipment", correct: false, points: 1 },
-        { id: "b", label: "Activate surge protection & balance loads", correct: true, points: 2 },
-        { id: "c", label: "Switch to backup generator", correct: false, points: 0 },
+        { id: "a", label: "Drain some water immediately", correct: false, points: 1 },
+        { id: "b", label: "Stop pump & activate overflow valve", correct: true, points: 2 },
+        { id: "c", label: "Ignore - tank can handle it", correct: false, points: 0 },
       ],
     },
     {
-      id: "water-leak",
-      title: "Water Pressure Drop",
-      description: "Floor 2 reports low water pressure. Possible leak in the supply line.",
+      id: "pipeline-leak",
+      title: "Pipeline Leak Detected",
+      description: "Pressure drop detected between pump and tank. Possible leak in pipeline.",
       type: "leak" as const,
       options: [
-        { id: "a", label: "Increase pump output", correct: false, points: 0 },
-        { id: "b", label: "Isolate Floor 2 supply & inspect", correct: true, points: 2 },
-        { id: "c", label: "Drain the water tank", correct: false, points: 0 },
+        { id: "a", label: "Increase pump pressure", correct: false, points: 0 },
+        { id: "b", label: "Isolate section & inspect for damage", correct: true, points: 2 },
+        { id: "c", label: "Drain the entire system", correct: false, points: 0 },
       ],
     },
     {
-      id: "cooling-overload",
-      title: "Cooling System Overload",
-      description: "Rooftop cooling unit temperature exceeds safe limits. Compressor at risk.",
+      id: "sensor-malfunction",
+      title: "Level Sensor Malfunction",
+      description: "Level sensor readings fluctuating. Calibration may be needed.",
       type: "overload" as const,
       options: [
-        { id: "a", label: "Shut down cooling immediately", correct: false, points: 0 },
-        { id: "b", label: "Reduce cooling load & clean filters", correct: true, points: 2 },
-        { id: "c", label: "Increase water flow to cooling unit", correct: false, points: 1 },
+        { id: "a", label: "Replace the sensor immediately", correct: false, points: 0 },
+        { id: "b", label: "Recalibrate sensor & verify readings", correct: true, points: 2 },
+        { id: "c", label: "Switch to manual level monitoring", correct: false, points: 1 },
       ],
     },
   ], []);
@@ -388,26 +359,26 @@ export function MEP2DCanvas({
   const TUTORIAL_STEPS = [
     {
       id: "welcome",
-      title: "MEP Systems Builder",
-      description: "Build and operate a complete building infrastructure with Mechanical, Electrical, and Plumbing systems.",
+      title: "Water Tank Filling System",
+      description: "Build a complete water tank filling mechanism with pump, pipeline, and level monitoring.",
       icon: "welcome",
     },
     {
       id: "step1",
       title: "Step 1: Install Components",
-      description: "Drag MEP components into the correct building slots. Install from Floor 1 up to the Roof.",
+      description: "Drag components in order.",
       icon: "building",
     },
     {
       id: "step2",
       title: "Step 2: Start Simulation",
-      description: "Once all components are placed, start the building simulation to power up systems.",
+      description: "Once all components are placed, start the water filling simulation.",
       icon: "components",
     },
     {
       id: "step3",
       title: "Step 3-4: Handle Events",
-      description: "Watch systems come online, then respond to real-time building events and emergencies.",
+      description: "Monitor water levels and respond to system events like pump failures or leaks.",
       icon: "events",
     },
     {
@@ -687,12 +658,11 @@ export function MEP2DCanvas({
   const getErrorMessage = useCallback((componentId: string) => {
     const comp = COMPONENTS.find(c => c.id === componentId);
     const messages: Record<string, string> = {
-      "pump": "Start with the Pump on Floor 1 - it's the foundation of the plumbing system.",
-      "water-supply": "Install Water Supply on Floor 1 after the Pump is running.",
-      "electrical-panel": "The Electrical Panel on Floor 2 needs the ground floor systems first.",
-      "lighting": "Lighting requires the Electrical Panel to be installed first.",
-      "water-tank": "Water Tank goes on the Roof - needs the pump system ready first.",
-      "cooling-unit": "Cooling Unit is the final rooftop component.",
+      "water-source": "Start with the Water Source - it's where the water supply originates.",
+      "pump": "Install the Pump after the Water Source is connected.",
+      "pipeline": "The Pipeline distributes water from the pump to the tank.",
+      "water-tank": "Water Tank stores the water - needs the pipeline connected first.",
+      "level-sensor": "Level Sensor monitors water levels - install it on the tank last.",
     };
     return messages[componentId] || `Install ${comp?.name} in the correct order.`;
   }, []);
@@ -792,8 +762,9 @@ export function MEP2DCanvas({
         </svg>
 
         {floors.map((floor, idx) => {
-          const floorIndex = floor.key === "floor1" ? 0 : floor.key === "floor2" ? 1 : 2;
-          const isUnlocked = placedComponents.length >= floorIndex * 2;
+          // Unlock logic: floor1 always, floor2 after 2 components, roof after 3 components
+          const requiredComponents = floor.key === "floor1" ? 0 : floor.key === "floor2" ? 2 : 3;
+          const isUnlocked = placedComponents.length >= requiredComponents;
           const isRoof = floor.key === "roof";
           
           return (
@@ -870,10 +841,9 @@ export function MEP2DCanvas({
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-3/4" style={{ background: `${COLORS.glassBorder}` }} />
                     
                     {/* Slots grid */}
-                    <div className="grid grid-cols-2 gap-2 md:gap-4">
-                      {floor.data.slots.map((slot, slotIdx) => {
+                    <div className={`grid gap-2 md:gap-4 ${floor.data.slots.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                      {floor.data.slots.map((slot) => {
                         const isSlotActive = isSlotFilled(slot.id);
-                        const isLeft = slotIdx === 0;
                         
                         return (
                           <div
@@ -893,7 +863,7 @@ export function MEP2DCanvas({
                               cursor: isUnlocked && !isSlotActive ? 'pointer' : 'default',
                             }}
                           >
-                            {isSlotActive ? (
+                            {isSlotActive && (
                               <motion.div
                                 initial={{ scale: 0, rotate: -10 }}
                                 animate={{ scale: 1, rotate: 0 }}
@@ -901,20 +871,6 @@ export function MEP2DCanvas({
                               >
                                 <ComponentIcon componentId={slot.componentId} size={isMobile ? 36 : 50} />
                               </motion.div>
-                            ) : (
-                              <div className="flex flex-col items-center justify-center gap-1">
-                                <div 
-                                  className="w-8 h-8 md:w-10 md:h-10 rounded border-2 border-dashed flex items-center justify-center"
-                                  style={{ borderColor: `${floor.data.color}30` }}
-                                >
-                                  <span className="text-lg md:text-xl" style={{ color: `${floor.data.color}30` }}>?</span>
-                                </div>
-                                {isUnlocked && (
-                                  <span className="text-[8px] md:text-[9px] uppercase tracking-wider" style={{ color: `${floor.data.color}40` }}>
-                                    {isLeft ? 'Slot A' : 'Slot B'}
-                                  </span>
-                                )}
-                              </div>
                             )}
                             
                             {/* Connection dots */}
@@ -938,9 +894,9 @@ export function MEP2DCanvas({
                 >
                   {/* Pipe indicators */}
                   <div className="flex flex-col gap-1">
-                    <div className="w-1.5 h-6 rounded-full" style={{ background: placedComponents.length > floorIndex * 2 ? COLORS.blue : `${COLORS.blue}30` }} />
-                    <div className="w-1.5 h-6 rounded-full" style={{ background: placedComponents.length > floorIndex * 2 ? COLORS.amber : `${COLORS.amber}30` }} />
-                    <div className="w-1.5 h-6 rounded-full" style={{ background: placedComponents.length > floorIndex * 2 ? COLORS.emerald : `${COLORS.emerald}30` }} />
+                    <div className="w-1.5 h-6 rounded-full" style={{ background: placedComponents.length > requiredComponents ? COLORS.blue : `${COLORS.blue}30` }} />
+                    <div className="w-1.5 h-6 rounded-full" style={{ background: placedComponents.length > requiredComponents ? COLORS.amber : `${COLORS.amber}30` }} />
+                    <div className="w-1.5 h-6 rounded-full" style={{ background: placedComponents.length > requiredComponents ? COLORS.emerald : `${COLORS.emerald}30` }} />
                   </div>
                 </div>
               </div>
