@@ -507,11 +507,11 @@ export default function InsightsPage() {
               background: BRAND.yellow,
               color: BRAND.dark,
             }}
-            onClick={() => router.push("/reset")}
+            onClick={() => router.push("/photobooth")}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
           >
-            Complete Experience →
+            Take a Photo →
           </motion.button>
         </motion.div>
       </div>

@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { EDUCATION_LEVELS, LOCATIONS } from "@/lib/constants";
 import { validateLoginForm, loginUser } from "@/lib/utils";
 import { FormErrors } from "@/lib/types";
-import { ThankYouPhotobooth } from "./ThankYouPhotobooth";
 
 type UserType = "student" | "professional";
 type ScanStep = "idle" | "options" | "scanning" | "confirm-front" | "confirm-back" | "complete";
@@ -70,12 +69,12 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
   const [useBusinessCard, setUseBusinessCard] = useState(false);
   const [scanStep, setScanStep] = useState<ScanStep>("idle");
   const [isScanning, setIsScanning] = useState(false);
-  const [showThankYouGlobe, setShowThankYouGlobe] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -167,14 +166,13 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
         businessCardBack: useBusinessCard ? businessCardBack : undefined,
       });
       
-      // For students: redirect based on education level
-      // For professionals without business card scan: show globe
+      // For students: redirect based on education level (photobooth comes after quiz/simulation)
+      // For professionals: show success modal
       if (userType === "student") {
-        // Start cinematic fade to black then redirect
         setIsFadingOut(true);
         setTimeout(() => {
-          // Use replace to prevent back navigation to login
-          // If education level is "Others", redirect to industry quiz instructions
+          // If education level is "Others", redirect to industry quiz
+          // Otherwise go to sector wheel for simulation
           if (formData.educationLevel === "Others") {
             router.replace("/industry-quiz-instructions");
           } else {
@@ -182,9 +180,9 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
           }
         }, 1200);
       } else {
-        // Professional - show thank you globe
-        setShowThankYouGlobe(true);
+        // Professional - show success modal
         setIsLoading(false);
+        setShowSuccessModal(true);
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -230,9 +228,9 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
         businessCardBack: businessCardBack || undefined,
       });
       
-      // Show the thank you globe after successful login
-      setShowThankYouGlobe(true);
+      // Show success modal for professionals
       setIsLoading(false);
+      setShowSuccessModal(true);
     } catch (error) {
       console.error("Login failed:", error);
       const errorMessage = error instanceof Error ? error.message : "Registration failed. Please try again.";
@@ -241,19 +239,116 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
     }
   };
 
-  // Show the thank you photobooth screen - stays on this screen permanently
-  if (showThankYouGlobe) {
-    return (
-      <ThankYouPhotobooth
-        userName={formData.name}
-        companyName={formData.companyName}
-        companyLocation={formData.companyLocation}
-      />
-    );
-  }
-
   return (
     <>
+      {/* Success Modal for Professionals */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <motion.div
+            className="fixed inset-0 z-[300] flex items-center justify-center p-4"
+            style={{ background: "rgba(0, 0, 0, 0.8)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="w-full max-w-sm rounded-2xl p-6 text-center relative overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, #2E3093 0%, #1a1d5c 100%)",
+                border: "1px solid rgba(250, 228, 82, 0.3)",
+                boxShadow: "0 25px 50px rgba(0, 0, 0, 0.5)",
+              }}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", damping: 20 }}
+            >
+              {/* Success Icon */}
+              <motion.div
+                className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(135deg, #FAE452 0%, #f5d93a 100%)",
+                  boxShadow: "0 10px 40px rgba(250, 228, 82, 0.4)",
+                }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              >
+                <svg
+                  className="w-10 h-10"
+                  style={{ color: "#2E3093" }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </motion.div>
+
+              {/* Success Message */}
+              <motion.h2
+                className="text-xl font-bold mb-2"
+                style={{ color: "#FAE452" }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                Welcome, {formData.name}!
+              </motion.h2>
+              
+              <motion.p
+                className="text-sm mb-4"
+                style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                Thank you for registering with GENESIS.
+                <br />
+                Your information has been saved successfully.
+              </motion.p>
+
+              {formData.companyName && (
+                <motion.div
+                  className="mb-4 py-2 px-3 rounded-lg"
+                  style={{ background: "rgba(255, 255, 255, 0.1)" }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <p className="text-xs" style={{ color: "rgba(255, 255, 255, 0.6)" }}>
+                    Company
+                  </p>
+                  <p className="text-sm font-medium" style={{ color: "#FFFFFF" }}>
+                    {formData.companyName}
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Branding */}
+              <motion.div
+                className="mt-4 pt-4"
+                style={{ borderTop: "1px solid rgba(255, 255, 255, 0.1)" }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                <p className="text-[10px]" style={{ color: "rgba(255, 255, 255, 0.4)" }}>
+                  <span style={{ color: "rgba(250, 228, 82, 0.7)" }}>Accent Techno Solutions</span>
+                  {" × "}
+                  <span>Suvidya Institute of Technology</span>
+                </p>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Cinematic fade to black overlay */}
       <AnimatePresence>
         {isFadingOut && (

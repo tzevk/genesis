@@ -401,6 +401,27 @@ export default function ThankYouPage() {
             <span style={{ color: `${BRAND.white}60` }}>Suvidya Institute of Technology Pvt. Ltd.</span>
           </div>
         </motion.div>
+
+        {/* Take a Photo Button */}
+        <motion.button
+          className="w-full py-3 xs:py-4 rounded-xl font-medium text-sm xs:text-base flex items-center justify-center gap-2 mt-4"
+          style={{
+            background: BRAND.yellow,
+            color: BRAND.indigo,
+          }}
+          onClick={() => router.push("/photobooth")}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+          Take a Photo 📸
+        </motion.button>
       </div>
     </div>
   );

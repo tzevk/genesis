@@ -26,17 +26,17 @@ const COLORS = {
 };
 
 // HVAC Components - Building a smart cooling system
+// Flow: Chiller -> AHU -> Ductwork -> VAV Box -> Air Terminal -> Room
 const COMPONENTS = [
-  { id: "thermostat", name: "Smart Thermostat", order: 1 },
+  { id: "chiller", name: "Chiller", order: 1 },
   { id: "ahu", name: "Air Handler Unit", order: 2 },
-  { id: "chiller", name: "Chiller", order: 3 },
-  { id: "ductwork", name: "Ductwork", order: 4 },
-  { id: "vav", name: "VAV Box", order: 5 },
-  { id: "diffuser", name: "Diffuser", order: 6 },
-  { id: "sensor", name: "Room Sensor", order: 7 },
+  { id: "ductwork", name: "Ductwork", order: 3 },
+  { id: "vav", name: "VAV Box", order: 4 },
+  { id: "air-terminal", name: "Air Terminal", order: 5 },
+  { id: "room", name: "Room", order: 6 },
 ];
 
-const CORRECT_SEQUENCE = ["thermostat", "ahu", "chiller", "ductwork", "vav", "diffuser", "sensor"];
+const CORRECT_SEQUENCE = ["chiller", "ahu", "ductwork", "vav", "air-terminal", "room"];
 
 // Shuffle array helper
 function shuffleArray<T>(array: T[]): T[] {
@@ -57,34 +57,30 @@ interface PlacedComponent {
 
 // ============ HVAC COMPONENT ICONS (Modern SVG) ============
 
-function ThermostatIcon({ size = 80 }: { size?: number }) {
+function ChillerIcon({ size = 80 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 80 80">
-      {/* Outer ring - glassy */}
-      <circle cx="40" cy="40" r="32" fill="url(#glassGradient)" stroke={COLORS.cyan} strokeWidth="2" />
-      {/* Inner display */}
-      <circle cx="40" cy="40" r="24" fill={COLORS.deepBlue} stroke={COLORS.glassBorder} strokeWidth="1" />
-      {/* Temperature arc */}
-      <path 
-        d="M 22 50 A 22 22 0 0 1 58 50" 
-        fill="none" 
-        stroke={COLORS.neonGreen} 
-        strokeWidth="3" 
-        strokeLinecap="round"
-        opacity="0.8"
-      />
-      {/* Temperature display */}
-      <text x="40" y="38" textAnchor="middle" fill={COLORS.coolWhite} fontSize="14" fontWeight="bold">72°</text>
-      <text x="40" y="50" textAnchor="middle" fill={COLORS.cyan} fontSize="8">COOLING</text>
-      {/* WiFi indicator */}
-      <path d="M36 58 Q40 54 44 58" stroke={COLORS.neonGreen} strokeWidth="1.5" fill="none" />
-      <path d="M34 61 Q40 55 46 61" stroke={COLORS.neonGreen} strokeWidth="1.5" fill="none" opacity="0.6" />
-      <defs>
-        <linearGradient id="glassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.15)" />
-          <stop offset="100%" stopColor="rgba(255,255,255,0.05)" />
-        </linearGradient>
-      </defs>
+      {/* Main chiller body */}
+      <rect x="8" y="20" width="64" height="45" rx="6" fill={COLORS.deepBlue} stroke={COLORS.teal} strokeWidth="2" />
+      {/* Glass panels */}
+      <rect x="12" y="24" width="28" height="37" rx="4" fill={COLORS.glass} stroke={COLORS.glassBorder} strokeWidth="1" />
+      <rect x="44" y="24" width="24" height="37" rx="4" fill={COLORS.glass} stroke={COLORS.glassBorder} strokeWidth="1" />
+      {/* Cooling coils */}
+      <path d="M16 32 Q20 28 24 32 T32 32" stroke={COLORS.coldBlue} strokeWidth="2" fill="none" />
+      <path d="M16 40 Q20 36 24 40 T32 40" stroke={COLORS.coldBlue} strokeWidth="2" fill="none" />
+      <path d="M16 48 Q20 44 24 48 T32 48" stroke={COLORS.coldBlue} strokeWidth="2" fill="none" />
+      {/* Ice crystals / Cold indicator */}
+      <text x="26" y="56" textAnchor="middle" fill={COLORS.cyan} fontSize="6">❄</text>
+      {/* Temperature gauge */}
+      <circle cx="56" cy="35" r="8" fill={COLORS.darkBlue} stroke={COLORS.glassBorder} strokeWidth="1" />
+      <text x="56" y="38" textAnchor="middle" fill={COLORS.coldBlue} fontSize="8">4°</text>
+      {/* Status LED */}
+      <circle cx="56" cy="52" r="3" fill={COLORS.neonGreen}>
+        <animate attributeName="opacity" values="1;0.4;1" dur="1.5s" repeatCount="indefinite" />
+      </circle>
+      {/* Pipes */}
+      <rect x="3" y="35" width="5" height="8" rx="2" fill={COLORS.teal} />
+      <rect x="72" y="35" width="5" height="8" rx="2" fill={COLORS.teal} />
     </svg>
   );
 }
@@ -122,34 +118,6 @@ function AHUIcon({ size = 80 }: { size?: number }) {
           <stop offset="100%" stopColor="rgba(255,255,255,0)" />
         </linearGradient>
       </defs>
-    </svg>
-  );
-}
-
-function ChillerIcon({ size = 80 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 80 80">
-      {/* Main chiller body */}
-      <rect x="8" y="20" width="64" height="45" rx="6" fill={COLORS.deepBlue} stroke={COLORS.teal} strokeWidth="2" />
-      {/* Glass panels */}
-      <rect x="12" y="24" width="28" height="37" rx="4" fill={COLORS.glass} stroke={COLORS.glassBorder} strokeWidth="1" />
-      <rect x="44" y="24" width="24" height="37" rx="4" fill={COLORS.glass} stroke={COLORS.glassBorder} strokeWidth="1" />
-      {/* Cooling coils */}
-      <path d="M16 32 Q20 28 24 32 T32 32" stroke={COLORS.coldBlue} strokeWidth="2" fill="none" />
-      <path d="M16 40 Q20 36 24 40 T32 40" stroke={COLORS.coldBlue} strokeWidth="2" fill="none" />
-      <path d="M16 48 Q20 44 24 48 T32 48" stroke={COLORS.coldBlue} strokeWidth="2" fill="none" />
-      {/* Ice crystals / Cold indicator */}
-      <text x="26" y="56" textAnchor="middle" fill={COLORS.cyan} fontSize="6">❄</text>
-      {/* Temperature gauge */}
-      <circle cx="56" cy="35" r="8" fill={COLORS.darkBlue} stroke={COLORS.glassBorder} strokeWidth="1" />
-      <text x="56" y="38" textAnchor="middle" fill={COLORS.coldBlue} fontSize="8">4°</text>
-      {/* Status LED */}
-      <circle cx="56" cy="52" r="3" fill={COLORS.neonGreen}>
-        <animate attributeName="opacity" values="1;0.4;1" dur="1.5s" repeatCount="indefinite" />
-      </circle>
-      {/* Pipes */}
-      <rect x="3" y="35" width="5" height="8" rx="2" fill={COLORS.teal} />
-      <rect x="72" y="35" width="5" height="8" rx="2" fill={COLORS.teal} />
     </svg>
   );
 }
@@ -215,14 +183,14 @@ function VAVIcon({ size = 80 }: { size?: number }) {
   );
 }
 
-function DiffuserIcon({ size = 80 }: { size?: number }) {
+function AirTerminalIcon({ size = 80 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 80 80">
       {/* Ceiling mount */}
       <rect x="5" y="10" width="70" height="8" rx="2" fill={COLORS.glass} stroke={COLORS.glassBorder} strokeWidth="1" />
-      {/* Diffuser body */}
+      {/* Air terminal body */}
       <path d="M15 18 L65 18 L55 35 L25 35 Z" fill={COLORS.deepBlue} stroke={COLORS.cyan} strokeWidth="1.5" />
-      {/* Louvers */}
+      {/* Louvers/vanes */}
       <rect x="28" y="22" width="24" height="2" rx="1" fill={COLORS.teal} />
       <rect x="30" y="27" width="20" height="2" rx="1" fill={COLORS.teal} />
       <rect x="32" y="32" width="16" height="2" rx="1" fill={COLORS.teal} />
@@ -256,29 +224,34 @@ function DiffuserIcon({ size = 80 }: { size?: number }) {
   );
 }
 
-function SensorIcon({ size = 80 }: { size?: number }) {
+function RoomIcon({ size = 80 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 80 80">
-      {/* Sensor body - modern rounded square */}
-      <rect x="20" y="20" width="40" height="40" rx="10" fill={COLORS.deepBlue} stroke={COLORS.cyan} strokeWidth="2" />
-      {/* Glass overlay */}
-      <rect x="23" y="23" width="34" height="34" rx="8" fill="url(#sensorGlass)" />
-      {/* Temperature reading */}
-      <text x="40" y="38" textAnchor="middle" fill={COLORS.coolWhite} fontSize="12" fontWeight="bold">68°</text>
-      <text x="40" y="50" textAnchor="middle" fill={COLORS.neonGreen} fontSize="7">OPTIMAL</text>
-      {/* Signal waves */}
-      <path d="M55 25 Q62 20 62 30" stroke={COLORS.cyan} strokeWidth="1.5" fill="none" opacity="0.4" />
-      <path d="M58 22 Q68 15 68 35" stroke={COLORS.cyan} strokeWidth="1.5" fill="none" opacity="0.2" />
-      {/* Motion indicator */}
-      <circle cx="28" cy="28" r="3" fill={COLORS.neonGreen} opacity="0.8">
-        <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite" />
+      {/* Room outline - isometric style */}
+      <path d="M10 25 L40 10 L70 25 L70 60 L40 75 L10 60 Z" fill={COLORS.deepBlue} stroke={COLORS.cyan} strokeWidth="1.5" />
+      {/* Back wall */}
+      <path d="M10 25 L40 40 L40 75 L10 60 Z" fill={COLORS.glass} stroke={COLORS.glassBorder} strokeWidth="1" />
+      {/* Side wall */}
+      <path d="M40 40 L70 25 L70 60 L40 75 Z" fill={COLORS.glassLight} stroke={COLORS.glassBorder} strokeWidth="1" />
+      {/* Floor */}
+      <path d="M10 25 L40 40 L70 25 L40 10 Z" fill="url(#roomFloor)" stroke={COLORS.glassBorder} strokeWidth="1" />
+      {/* Window on back wall */}
+      <rect x="18" y="35" width="12" height="15" rx="1" fill={COLORS.darkBlue} stroke={COLORS.teal} strokeWidth="1" />
+      {/* Cool air indicator in room */}
+      <circle cx="40" cy="50" r="8" fill="none" stroke={COLORS.neonBlue} strokeWidth="1" strokeDasharray="3 2" opacity="0.5">
+        <animate attributeName="r" values="6;10;6" dur="3s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0.5;0.2;0.5" dur="3s" repeatCount="indefinite" />
       </circle>
-      {/* Mount */}
-      <rect x="35" y="60" width="10" height="8" rx="2" fill={COLORS.glass} />
+      {/* Temperature indicator */}
+      <text x="40" y="53" textAnchor="middle" fill={COLORS.neonGreen} fontSize="8" fontWeight="bold">68°F</text>
+      {/* Comfort indicator */}
+      <circle cx="55" cy="35" r="4" fill={COLORS.neonGreen} opacity="0.8">
+        <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2s" repeatCount="indefinite" />
+      </circle>
       <defs>
-        <linearGradient id="sensorGlass" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.1)" />
-          <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+        <linearGradient id="roomFloor" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={COLORS.glass} />
+          <stop offset="100%" stopColor="rgba(255,255,255,0.02)" />
         </linearGradient>
       </defs>
     </svg>
@@ -288,13 +261,12 @@ function SensorIcon({ size = 80 }: { size?: number }) {
 // Component icon renderer
 function ComponentIcon({ componentId, size = 80 }: { componentId: string; size?: number }) {
   switch (componentId) {
-    case "thermostat": return <ThermostatIcon size={size} />;
-    case "ahu": return <AHUIcon size={size} />;
     case "chiller": return <ChillerIcon size={size} />;
+    case "ahu": return <AHUIcon size={size} />;
     case "ductwork": return <DuctworkIcon size={size} />;
     case "vav": return <VAVIcon size={size} />;
-    case "diffuser": return <DiffuserIcon size={size} />;
-    case "sensor": return <SensorIcon size={size} />;
+    case "air-terminal": return <AirTerminalIcon size={size} />;
+    case "room": return <RoomIcon size={size} />;
     default: return null;
   }
 }
@@ -398,7 +370,7 @@ export function HVAC2DCanvas({
     {
       id: "step1",
       title: "Step 1: Install Components",
-      description: "Drag HVAC components into the correct slots. Follow the cooling chain: Control → Processing → Distribution → Feedback.",
+      description: "Drag HVAC components into the correct slots.",
       icon: "building",
     },
     {
@@ -578,29 +550,60 @@ export function HVAC2DCanvas({
     return CORRECT_SEQUENCE[nextIndex] === componentId;
   }, [placedComponents]);
 
-  // Get error message for wrong placement
-  const getErrorMessage = useCallback((componentId: string) => {
-    const messages: Record<string, string> = {
-      thermostat: "Start with the Smart Thermostat - it's the brain that controls the entire system.",
-      ahu: "The Air Handler Unit processes air after receiving control signals from the thermostat.",
-      chiller: "The Chiller provides cooling capacity to the Air Handler Unit.",
-      ductwork: "Ductwork distributes the cooled air throughout the building.",
-      vav: "VAV Boxes regulate airflow to different zones after the main ductwork.",
-      diffuser: "Diffusers deliver the cooled air into the room space.",
-      sensor: "Room Sensors provide feedback to the thermostat, completing the control loop.",
-    };
-    return messages[componentId] || `Place the correct component first.`;
+  // Check if component is already placed
+  const isAlreadyPlaced = useCallback((componentId: string) => {
+    return placedComponents.some(p => p.componentId === componentId);
+  }, [placedComponents]);
+
+  // Validate component exists in COMPONENTS array
+  const isValidComponent = useCallback((componentId: string) => {
+    return COMPONENTS.some(c => c.id === componentId);
   }, []);
 
-  // Determine fault type
+  // Get expected next component name
+  const getExpectedNextComponent = useCallback(() => {
+    const nextIndex = placedComponents.length;
+    if (nextIndex >= CORRECT_SEQUENCE.length) return null;
+    const nextId = CORRECT_SEQUENCE[nextIndex];
+    return COMPONENTS.find(c => c.id === nextId)?.name || nextId;
+  }, [placedComponents]);
+
+  // Get error message for wrong placement
+  const getErrorMessage = useCallback((componentId: string) => {
+    const componentName = COMPONENTS.find(c => c.id === componentId)?.name || componentId;
+    
+    const messages: Record<string, string> = {
+      chiller: "Start with the Chiller - it generates the cold water that powers the entire HVAC system.",
+      ahu: "The Air Handler Unit (AHU) receives chilled water from the Chiller to condition the air.",
+      ductwork: "Ductwork carries the conditioned air from the AHU throughout the building.",
+      vav: "VAV Boxes control airflow volume to different zones after the main ductwork.",
+      "air-terminal": "Air Terminals (diffusers/grilles) deliver conditioned air into the room.",
+      room: "The Room is the final destination where occupants receive the conditioned air.",
+    };
+    
+    return messages[componentId] || `${componentName} cannot be placed here.`;
+  }, []);
+
+  // Determine fault type with more specific categorization
   const getFaultType = useCallback((attemptedComponent: string): string => {
     const attemptedIndex = CORRECT_SEQUENCE.indexOf(attemptedComponent);
     const expectedIndex = placedComponents.length;
     
+    // Component not in sequence at all
+    if (attemptedIndex === -1) return "invalid";
+    
+    // Trying to place a component that comes later in sequence
     if (attemptedIndex > expectedIndex) return "order";
-    if (attemptedIndex < expectedIndex && attemptedIndex !== -1) return "missing";
-    if (attemptedComponent === "sensor" && expectedIndex < 6) return "feedback";
-    if (attemptedComponent === "chiller" && expectedIndex !== 2) return "efficiency";
+    
+    // Trying to place a component that should have been placed earlier
+    if (attemptedIndex < expectedIndex) return "missing";
+    
+    // Specific validation rules
+    if (attemptedComponent === "room" && expectedIndex < 5) return "feedback";
+    if (attemptedComponent === "ahu" && expectedIndex !== 1) return "efficiency";
+    if (attemptedComponent === "chiller" && expectedIndex !== 0) return "sequence";
+    if (attemptedComponent === "ductwork" && expectedIndex !== 2) return "distribution";
+    
     return "order";
   }, [placedComponents]);
 
@@ -608,6 +611,38 @@ export function HVAC2DCanvas({
   const handleCanvasDrop = useCallback(() => {
     if (!draggingComponent) return;
     
+    // Validation 1: Check if game is already complete
+    if (isComplete) {
+      setDraggingComponent(null);
+      return;
+    }
+    
+    // Validation 2: Check if time is up
+    if (isTimeUp) {
+      setDraggingComponent(null);
+      return;
+    }
+    
+    // Validation 3: Check if component is valid
+    if (!isValidComponent(draggingComponent)) {
+      console.warn("Invalid component:", draggingComponent);
+      setDraggingComponent(null);
+      return;
+    }
+    
+    // Validation 4: Check if component is already placed
+    if (isAlreadyPlaced(draggingComponent)) {
+      setDraggingComponent(null);
+      return;
+    }
+    
+    // Validation 5: Check if all slots are filled
+    if (placedComponents.length >= CORRECT_SEQUENCE.length) {
+      setDraggingComponent(null);
+      return;
+    }
+    
+    // Validation 6: Check correct sequence
     if (!isCorrectNext(draggingComponent)) {
       setWrongAttempts(prev => prev + 1);
       const faultType = getFaultType(draggingComponent);
@@ -619,6 +654,7 @@ export function HVAC2DCanvas({
         setFaultComponent(null);
       }, 3000);
       
+      // Show hint after 2 wrong attempts
       if (wrongAttempts >= 2) {
         setHintMessage(getErrorMessage(draggingComponent));
         setShowHint(true);
@@ -662,10 +698,13 @@ export function HVAC2DCanvas({
     
     setDraggingComponent(null);
     setWrongAttempts(0);
-  }, [draggingComponent, isCorrectNext, wrongAttempts, getErrorMessage, getFaultType, placedComponents, slotPositions, timeLeft, onComplete, saveScoreToBackend]);
+  }, [draggingComponent, isCorrectNext, isAlreadyPlaced, isValidComponent, isComplete, isTimeUp, wrongAttempts, getErrorMessage, getFaultType, placedComponents, slotPositions, timeLeft, onComplete, saveScoreToBackend]);
 
   // Drag handlers
   const handleDragStart = (componentId: string) => {
+    // Prevent dragging if game is complete or time is up
+    if (isComplete || isTimeUp) return;
+    
     const alreadyPlaced = placedComponents.some(p => p.componentId === componentId);
     if (alreadyPlaced) return;
     setDraggingComponent(componentId);
@@ -1092,29 +1131,38 @@ export function HVAC2DCanvas({
                       background: placedComponents.length >= 1 ? COLORS.neonGreen : `${COLORS.coolWhite}30`,
                       boxShadow: placedComponents.length >= 1 ? `0 0 6px ${COLORS.neonGreen}` : 'none',
                     }}></span>
-                    <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: `${COLORS.coolWhite}80` }}>Control</span>
+                    <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: `${COLORS.coolWhite}80` }}>Chiller</span>
                   </div>
                   <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-1.5'}`}>
                     <span className={`${isMobile ? 'w-2 h-2' : 'w-2.5 h-2.5'} rounded-full`} style={{ 
-                      background: placedComponents.length >= 3 ? COLORS.neonGreen : `${COLORS.coolWhite}30`,
-                      boxShadow: placedComponents.length >= 3 ? `0 0 6px ${COLORS.neonGreen}` : 'none',
+                      background: placedComponents.length >= 2 ? COLORS.neonGreen : `${COLORS.coolWhite}30`,
+                      boxShadow: placedComponents.length >= 2 ? `0 0 6px ${COLORS.neonGreen}` : 'none',
                     }}></span>
-                    <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: `${COLORS.coolWhite}80` }}>Cooling</span>
+                    <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: `${COLORS.coolWhite}80` }}>Air Handling</span>
                   </div>
                   <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-1.5'}`}>
                     <span className={`${isMobile ? 'w-2 h-2' : 'w-2.5 h-2.5'} rounded-full`} style={{ 
-                      background: placedComponents.length >= 5 ? COLORS.neonGreen : `${COLORS.coolWhite}30`,
-                      boxShadow: placedComponents.length >= 5 ? `0 0 6px ${COLORS.neonGreen}` : 'none',
+                      background: placedComponents.length >= 4 ? COLORS.neonGreen : `${COLORS.coolWhite}30`,
+                      boxShadow: placedComponents.length >= 4 ? `0 0 6px ${COLORS.neonGreen}` : 'none',
                     }}></span>
                     <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: `${COLORS.coolWhite}80` }}>Distribution</span>
                   </div>
                   <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-1.5'}`}>
                     <span className={`${isMobile ? 'w-2 h-2' : 'w-2.5 h-2.5'} rounded-full`} style={{ 
-                      background: placedComponents.length >= 7 ? COLORS.neonGreen : `${COLORS.coolWhite}30`,
-                      boxShadow: placedComponents.length >= 7 ? `0 0 6px ${COLORS.neonGreen}` : 'none',
+                      background: placedComponents.length >= 6 ? COLORS.neonGreen : `${COLORS.coolWhite}30`,
+                      boxShadow: placedComponents.length >= 6 ? `0 0 6px ${COLORS.neonGreen}` : 'none',
                     }}></span>
-                    <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: `${COLORS.coolWhite}80` }}>Feedback</span>
+                    <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: `${COLORS.coolWhite}80` }}>Room Delivery</span>
                   </div>
+                  {wrongAttempts > 0 && (
+                    <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-1.5'} mt-1 pt-1`} style={{ borderTop: `1px solid ${COLORS.warmOrange}30` }}>
+                      <span className={`${isMobile ? 'w-2 h-2' : 'w-2.5 h-2.5'} rounded-full`} style={{ 
+                        background: COLORS.warmOrange,
+                        boxShadow: `0 0 6px ${COLORS.warmOrange}`,
+                      }}></span>
+                      <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'}`} style={{ color: COLORS.warmOrange }}>Errors: {wrongAttempts} (-{(wrongAttempts * 0.5).toFixed(1)} pts)</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1146,10 +1194,13 @@ export function HVAC2DCanvas({
                         {lastFault === 'missing' && 'Missing Component'}
                         {lastFault === 'feedback' && 'Feedback Loop Error'}
                         {lastFault === 'efficiency' && 'Efficiency Issue'}
+                        {lastFault === 'invalid' && 'Invalid Component'}
+                        {lastFault === 'sequence' && 'Sequence Error'}
+                        {lastFault === 'distribution' && 'Distribution Error'}
                       </p>
                       {faultComponent && (
                         <p className={`${isMobile ? 'text-[8px]' : 'text-[10px]'}`} style={{ color: `${COLORS.coolWhite}70` }}>
-                          {COMPONENTS.find(c => c.id === faultComponent)?.name}
+                          {COMPONENTS.find(c => c.id === faultComponent)?.name} - Not the next step
                         </p>
                       )}
                     </div>
@@ -1333,7 +1384,10 @@ export function HVAC2DCanvas({
                   </svg>
                   <span className="text-xs uppercase font-bold tracking-wider" style={{ color: COLORS.neonGreen }}>Score</span>
                 </div>
-                <span className="text-3xl font-bold" style={{ color: COLORS.coolWhite }}>{score.toFixed(1)}</span>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-3xl font-bold" style={{ color: COLORS.coolWhite }}>{score.toFixed(1)}</span>
+                  <span className="text-sm" style={{ color: `${COLORS.coolWhite}50` }}>/10</span>
+                </div>
               </div>
             </div>
           </div>

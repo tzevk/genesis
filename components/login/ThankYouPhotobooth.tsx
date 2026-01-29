@@ -13,8 +13,7 @@ const BRAND = {
 
 interface ThankYouPhotoboothProps {
   userName: string;
-  companyName: string;
-  companyLocation: string;
+  educationLevel?: string;
 }
 
 // Pre-generate confetti positions
@@ -26,7 +25,7 @@ const CONFETTI = Array.from({ length: 30 }, (_, i) => ({
   color: i % 3 === 0 ? BRAND.yellow : i % 3 === 1 ? BRAND.blue : BRAND.white,
 }));
 
-export function ThankYouPhotobooth({ userName, companyName }: ThankYouPhotoboothProps) {
+export function ThankYouPhotobooth({ userName, educationLevel }: ThankYouPhotoboothProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -94,7 +93,7 @@ export function ThankYouPhotobooth({ userName, companyName }: ThankYouPhotobooth
   }, []);
 
   // Capture photo
-  const capturePhoto = useCallback(() => {
+  const capturePhoto = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
@@ -110,7 +109,69 @@ export function ThankYouPhotobooth({ userName, companyName }: ThankYouPhotobooth
     // Draw video frame (no mirroring for back camera)
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Add branded overlay
+    // Load logos
+    const loadImage = (src: string): Promise<HTMLImageElement> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+    };
+
+    // Add top overlay for ChemTECH branding
+    const topGradient = ctx.createLinearGradient(0, 0, 0, 80);
+    topGradient.addColorStop(0, "rgba(46, 48, 147, 0.9)");
+    topGradient.addColorStop(1, "rgba(46, 48, 147, 0)");
+    ctx.fillStyle = topGradient;
+    ctx.fillRect(0, 0, canvas.width, 80);
+
+    // Draw logos at top corners
+    try {
+      const [atsLogo, sitLogo] = await Promise.all([
+        loadImage("/ats.png"),
+        loadImage("/sit.png"),
+      ]);
+      
+      const logoSize = 45;
+      const logoPadding = 8;
+      
+      // ATS logo - top left
+      ctx.drawImage(atsLogo, logoPadding, logoPadding, logoSize, logoSize);
+      
+      // SIT logo - top right
+      ctx.drawImage(sitLogo, canvas.width - logoSize - logoPadding, logoPadding, logoSize, logoSize);
+    } catch (error) {
+      console.error("Failed to load logos:", error);
+    }
+
+    // Add ChemTECH 2026 header
+    ctx.fillStyle = BRAND.yellow;
+    ctx.font = "bold 18px system-ui, -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("ChemTECH 2026", canvas.width / 2, 25);
+
+    // Add location
+    ctx.fillStyle = BRAND.white;
+    ctx.font = "12px system-ui, -apple-system, sans-serif";
+    ctx.fillText("Bombay Exhibition Centre, Mumbai", canvas.width / 2, 45);
+
+    // Add timestamp
+    const now = new Date();
+    const timestamp = now.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+    ctx.fillStyle = `${BRAND.white}90`;
+    ctx.font = "10px system-ui, -apple-system, sans-serif";
+    ctx.fillText(timestamp, canvas.width / 2, 62);
+
+    // Add bottom branded overlay
     const gradient = ctx.createLinearGradient(0, canvas.height - 100, 0, canvas.height);
     gradient.addColorStop(0, "rgba(46, 48, 147, 0)");
     gradient.addColorStop(1, "rgba(46, 48, 147, 0.9)");
@@ -125,7 +186,7 @@ export function ThankYouPhotobooth({ userName, companyName }: ThankYouPhotobooth
     
     ctx.fillStyle = BRAND.yellow;
     ctx.font = "14px system-ui, -apple-system, sans-serif";
-    ctx.fillText(companyName || "Professional Visitor", canvas.width / 2, canvas.height - 25);
+    ctx.fillText(educationLevel || "Student Visitor", canvas.width / 2, canvas.height - 25);
 
     // Add GENESIS branding
     ctx.fillStyle = `${BRAND.white}80`;
@@ -136,7 +197,22 @@ export function ThankYouPhotobooth({ userName, companyName }: ThankYouPhotobooth
     // Get data URL
     const photoData = canvas.toDataURL("image/jpeg", 0.9);
     setCapturedPhoto(photoData);
-  }, [userName, companyName]);
+
+    // Save photo to database for photo wall
+    try {
+      await fetch("/api/photos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          photo: photoData,
+          userName,
+          companyName: educationLevel || "Student Visitor",
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to save photo to wall:", error);
+    }
+  }, [userName, educationLevel]);
 
   // Start countdown for photo
   const startCountdown = useCallback(() => {

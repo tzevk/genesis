@@ -224,7 +224,7 @@ export function SplashScreen() {
             >
               {/* Typing GENESIS */}
               <h1 
-                className="text-6xl md:text-8xl tracking-tight"
+                className="text-4xl xs:text-5xl sm:text-6xl md:text-8xl tracking-tight"
                 style={{ 
                   color: "#FFFFFF",
                   fontWeight: 600,
@@ -260,23 +260,24 @@ export function SplashScreen() {
               
               {/* Partner Logos - Reveal after typing */}
               <motion.div 
-                className="mt-12 flex flex-col items-center gap-4"
+                className="mt-6 xs:mt-8 sm:mt-12 flex flex-col items-center gap-3 xs:gap-4 px-4"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 1.5 }}
               >
                 <motion.p
-                  className="text-xs uppercase tracking-[0.3em]"
+                  className="text-[10px] xs:text-xs uppercase tracking-[0.2em] xs:tracking-[0.3em]"
                   style={{ color: "rgba(255, 255, 255, 0.5)" }}
                 >
                   Presented by
                 </motion.p>
-                {/* White container for logos */}
+                {/* Logos container - minimal padding, highlighted */}
                 <div 
-                  className="px-8 py-5 rounded-2xl flex items-center gap-8"
+                  className="px-3 xs:px-4 sm:px-5 py-2 xs:py-2.5 sm:py-3 rounded-lg xs:rounded-xl flex items-center gap-3 xs:gap-4 sm:gap-5"
                   style={{
                     background: "#FFFFFF",
-                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.15)",
+                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2), 0 0 40px rgba(250, 228, 82, 0.3)",
+                    border: "2px solid rgba(250, 228, 82, 0.4)",
                   }}
                 >
                   <motion.div
@@ -288,11 +289,11 @@ export function SplashScreen() {
                       alt="Accent Techno Solutions"
                       width={140}
                       height={70}
-                      className="object-contain"
+                      className="object-contain w-[80px] xs:w-[100px] sm:w-[140px] h-auto"
                     />
                   </motion.div>
                   <div 
-                    className="w-px h-12" 
+                    className="w-px h-8 xs:h-10 sm:h-12" 
                     style={{ background: "linear-gradient(180deg, transparent, rgba(46, 48, 147, 0.3), transparent)" }} 
                   />
                   <motion.div
@@ -304,7 +305,7 @@ export function SplashScreen() {
                       alt="Suvidya Institute of Technology"
                       width={140}
                       height={70}
-                      className="object-contain"
+                      className="object-contain w-[80px] xs:w-[100px] sm:w-[140px] h-auto"
                     />
                   </motion.div>
                 </div>
@@ -313,7 +314,7 @@ export function SplashScreen() {
 
             {/* Subtle tap indicator */}
             <motion.div
-              className="absolute bottom-12 flex flex-col items-center gap-2"
+              className="absolute bottom-6 xs:bottom-8 sm:bottom-12 flex flex-col items-center gap-1.5 xs:gap-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2.2, duration: 0.6 }}
@@ -324,11 +325,12 @@ export function SplashScreen() {
                 transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
               >
                 <svg 
-                  width="24" 
-                  height="24" 
+                  width="20" 
+                  height="20" 
                   viewBox="0 0 24 24" 
                   fill="none"
                   style={{ opacity: 0.5 }}
+                  className="w-5 h-5 xs:w-6 xs:h-6"
                 >
                   <path 
                     d="M18 15L12 9L6 15" 
@@ -340,7 +342,7 @@ export function SplashScreen() {
                 </svg>
               </motion.div>
               <motion.p
-                className="text-xs tracking-widest"
+                className="text-[10px] xs:text-xs tracking-widest"
                 style={{ color: "rgba(255, 255, 255, 0.4)" }}
                 animate={{ opacity: [0.3, 0.6, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity }}
