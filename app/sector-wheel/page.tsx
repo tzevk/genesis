@@ -173,7 +173,8 @@ export default function SectorWheelPage() {
       // Fetch user data from MongoDB session
       const userData = await getUserDataAsync();
       if (!userData) {
-        router.push("/");
+        // No session, redirect to login (replace to prevent back)
+        router.replace("/");
         return;
       }
     };
@@ -233,7 +234,8 @@ export default function SectorWheelPage() {
     
     setIsSubmitting(true);
     await updateUserSector(selectedSector);
-    router.push("/canvas");
+    // Use replace to prevent back navigation
+    router.replace("/canvas");
   }, [selectedSector, isSubmitting, router]);
 
   // Get sector icon component

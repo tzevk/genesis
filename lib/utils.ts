@@ -182,7 +182,7 @@ export const fetchUserFromDB = async (phone: string): Promise<ExtendedUserData |
 export const validateLoginForm = (
   formData: Omit<UserData, "sector">,
   userType: "student" | "professional" = "student",
-  useBusinessCard: boolean = false
+  _useBusinessCard: boolean = false
 ): FormErrors => {
   const errors: FormErrors = {};
 
@@ -193,7 +193,7 @@ export const validateLoginForm = (
   }
 
   if (userType === "student") {
-    // Student validation
+    // Student validation: name, email, phone, education level
     if (!formData.email.trim()) {
       errors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -210,19 +210,14 @@ export const validateLoginForm = (
       errors.educationLevel = "Please select your education level";
     }
   } else {
-    // Industry Professional validation
-    if (useBusinessCard) {
-      // Business card mode - no additional validation needed
-      // Images are optional but helpful
-    } else {
-      // Manual entry mode
-      if (!formData.companyName?.trim()) {
-        errors.companyName = "Company name is required";
-      }
+    // Professional validation: name, company name, location
+    // Business card images are optional
+    if (!formData.companyName?.trim()) {
+      errors.companyName = "Company name is required";
+    }
 
-      if (!formData.companyId?.trim()) {
-        errors.companyId = "Company ID is required";
-      }
+    if (!formData.companyLocation?.trim()) {
+      errors.companyLocation = "Location is required";
     }
   }
 
@@ -255,4 +250,172 @@ export const getRandomDelay = (maxSeconds: number = 3): number => {
 // Generate random duration
 export const getRandomDuration = (base: number = 2, variance: number = 2): number => {
   return base + Math.random() * variance;
+};
+
+// ============================================
+// LOCAL BACKUP UTILITIES FOR DATA LOSS PREVENTION
+// ============================================
+
+const BACKUP_KEY = "genesisUnsavedData";
+const MAX_RETRY_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 1000;
+
+export interface UnsavedScoreData {
+  phone: string;
+  sector: string;
+  score: number;
+  slots: number;
+  timeLeft: number;
+  completedAt: string;
+  attemptCount: number;
+  timestamp: number;
+}
+
+// Save data to local backup
+export const saveToLocalBackup = (data: UnsavedScoreData): void => {
+  if (typeof window === "undefined") return;
+  try {
+    const existing = getLocalBackups();
+    // Add new data, keep max 5 backups
+    const updated = [data, ...existing].slice(0, 5);
+    localStorage.setItem(BACKUP_KEY, JSON.stringify(updated));
+    console.log("Data backed up locally:", data);
+  } catch (error) {
+    console.error("Failed to save local backup:", error);
+  }
+};
+
+// Get all local backups
+export const getLocalBackups = (): UnsavedScoreData[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(BACKUP_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+// Remove a specific backup after successful save
+export const removeFromLocalBackup = (timestamp: number): void => {
+  if (typeof window === "undefined") return;
+  try {
+    const existing = getLocalBackups();
+    const updated = existing.filter(item => item.timestamp !== timestamp);
+    if (updated.length > 0) {
+      localStorage.setItem(BACKUP_KEY, JSON.stringify(updated));
+    } else {
+      localStorage.removeItem(BACKUP_KEY);
+    }
+    console.log("Backup removed after successful save");
+  } catch (error) {
+    console.error("Failed to remove local backup:", error);
+  }
+};
+
+// Clear all local backups
+export const clearAllLocalBackups = (): void => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(BACKUP_KEY);
+  } catch (error) {
+    console.error("Failed to clear local backups:", error);
+  }
+};
+
+// Retry helper with exponential backoff
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Save score with retry and local backup
+export const saveScoreWithBackup = async (
+  data: Omit<UnsavedScoreData, "timestamp" | "attemptCount">
+): Promise<{ success: boolean; isNewHighScore?: boolean; error?: string }> => {
+  const timestamp = Date.now();
+  const backupData: UnsavedScoreData = { ...data, timestamp, attemptCount: 0 };
+  
+  // Save to local backup first
+  saveToLocalBackup(backupData);
+  
+  // Try to save to server with retries
+  for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
+    try {
+      const response = await fetch("/api/user/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: data.phone,
+          sector: data.sector,
+          score: data.score,
+          slots: data.slots,
+          timeLeft: data.timeLeft,
+          completedAt: data.completedAt,
+        }),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        // Success - remove from local backup
+        removeFromLocalBackup(timestamp);
+        return { 
+          success: true, 
+          isNewHighScore: result.isNewHighScore 
+        };
+      }
+      
+      // Server returned error, retry if not final attempt
+      if (attempt < MAX_RETRY_ATTEMPTS) {
+        console.warn(`Save attempt ${attempt} failed, retrying...`);
+        await delay(RETRY_DELAY_MS * attempt);
+      }
+    } catch (error) {
+      // Network error, retry if not final attempt
+      if (attempt < MAX_RETRY_ATTEMPTS) {
+        console.warn(`Network error on attempt ${attempt}, retrying...`);
+        await delay(RETRY_DELAY_MS * attempt);
+      }
+    }
+  }
+  
+  // All retries failed - data remains in local backup
+  console.error("Failed to save score after all retries. Data saved locally for recovery.");
+  return { 
+    success: false, 
+    error: "Failed to save. Your score has been backed up locally." 
+  };
+};
+
+// Sync any pending local backups to server (call on app init)
+export const syncPendingBackups = async (): Promise<number> => {
+  const backups = getLocalBackups();
+  if (backups.length === 0) return 0;
+  
+  console.log(`Found ${backups.length} unsaved score(s). Attempting to sync...`);
+  let syncedCount = 0;
+  
+  for (const backup of backups) {
+    try {
+      const response = await fetch("/api/user/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: backup.phone,
+          sector: backup.sector,
+          score: backup.score,
+          slots: backup.slots,
+          timeLeft: backup.timeLeft,
+          completedAt: backup.completedAt,
+        }),
+      });
+      
+      if (response.ok) {
+        removeFromLocalBackup(backup.timestamp);
+        syncedCount++;
+        console.log(`Synced backup from ${new Date(backup.timestamp).toISOString()}`);
+      }
+    } catch (error) {
+      console.error("Failed to sync backup:", error);
+    }
+  }
+  
+  return syncedCount;
 };

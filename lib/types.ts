@@ -8,6 +8,7 @@ export interface UserData {
   educationLevel: string;
   companyName?: string;
   companyId?: string;
+  companyLocation?: string;
   userType?: UserType;
   businessCardFront?: string | null;
   businessCardBack?: string | null;

@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ThankYouOverlay from "./ThankYouOverlay";
+import { saveScoreWithBackup } from "@/lib/utils";
 
 // HVAC Smart Building Color Palette - Modern, clean, futuristic
 const COLORS = {
@@ -507,35 +508,26 @@ export function HVAC2DCanvas({
     startSession();
   }, [userPhone, showTutorial]);
 
-  // Save score to backend
+  // Save score to backend with local backup for data loss prevention
   const saveScoreToBackend = useCallback(async (finalScore: number, finalTimeLeft: number, slots: number) => {
-    if (!userPhone) return;
+    if (!userPhone) return false;
     
-    try {
-      const response = await fetch("/api/user/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: userPhone,
-          sector: userSector,
-          score: finalScore,
-          slots: slots,
-          timeLeft: finalTimeLeft,
-          completedAt: new Date().toISOString(),
-        }),
-      });
-      
-      const data = await response.json();
-      console.log("Score saved:", data);
-      
-      if (data.isNewHighScore) {
-        console.log("New high score achieved!");
-      }
-      return true;
-    } catch (error) {
-      console.error("Failed to save score:", error);
-      return false;
+    const result = await saveScoreWithBackup({
+      phone: userPhone,
+      sector: userSector,
+      score: finalScore,
+      slots: slots,
+      timeLeft: finalTimeLeft,
+      completedAt: new Date().toISOString(),
+    });
+    
+    if (result.success) {
+      console.log("Score saved successfully", result.isNewHighScore ? "- New high score!" : "");
+    } else {
+      console.warn("Score backed up locally:", result.error);
     }
+    
+    return result.success;
   }, [userPhone, userSector]);
 
   // Timer - paused during tutorial

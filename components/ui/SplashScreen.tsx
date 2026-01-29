@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoginForm } from "@/components/login/LoginForm";
+import { getUserDataAsync } from "@/lib/utils";
 
-type AppPhase = "splash" | "login";
+type AppPhase = "splash" | "login" | "checking";
 
 // Animated wave background component - defined outside to prevent re-creation
 function WaveBackground() {
@@ -155,15 +156,49 @@ function WaveBackground() {
 
 export function SplashScreen() {
   const router = useRouter();
-  const [phase, setPhase] = useState<AppPhase>("splash");
+  const [phase, setPhase] = useState<AppPhase>("checking");
+
+  // Check if user is already logged in - redirect them away from login
+  useEffect(() => {
+    const checkSession = async () => {
+      const userData = await getUserDataAsync();
+      if (userData) {
+        // User is already logged in, redirect to appropriate page
+        if (userData.sector) {
+          // Has sector selected, go to canvas
+          router.replace("/canvas");
+        } else {
+          // No sector yet, go to sector wheel
+          router.replace("/sector-wheel");
+        }
+      } else {
+        // No session, show splash screen
+        setPhase("splash");
+      }
+    };
+    checkSession();
+  }, [router]);
 
   const handleEnterExperience = () => {
     setPhase("login");
   };
 
   const handleStartSimulation = () => {
-    router.push("/sector-wheel");
+    router.replace("/sector-wheel");
   };
+
+  // Show nothing while checking session
+  if (phase === "checking") {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#2A6BB5" }}>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-white border-t-transparent rounded-full"
+        />
+      </div>
+    );
+  }
 
   return (
     <>

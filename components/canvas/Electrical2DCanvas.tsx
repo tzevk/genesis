@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ThankYouOverlay from "./ThankYouOverlay";
+import { saveScoreWithBackup } from "@/lib/utils";
 
 // Electrical Power System Color Palette
 const COLORS = {
@@ -460,29 +461,25 @@ export default function Electrical2DCanvas({
     startSession();
   }, [userPhone, showTutorial]);
 
-  // Save score
+  // Save score with local backup for data loss prevention
   const saveScoreToBackend = useCallback(async (finalScore: number, finalTimeLeft: number, slots: number) => {
     if (!userPhone) return false;
-    try {
-      const response = await fetch("/api/user/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: userPhone,
-          sector: userSector,
-          score: finalScore,
-          slots: slots,
-          timeLeft: finalTimeLeft,
-          completedAt: new Date().toISOString(),
-        }),
-      });
-      const data = await response.json();
-      if (data.isNewHighScore) console.log("New high score!");
-      return true;
-    } catch (error) {
-      console.error("Failed to save score:", error);
-      return false;
+    
+    const result = await saveScoreWithBackup({
+      phone: userPhone,
+      sector: userSector,
+      score: finalScore,
+      slots: slots,
+      timeLeft: finalTimeLeft,
+      completedAt: new Date().toISOString(),
+    });
+    
+    if (result.success) {
+      if (result.isNewHighScore) console.log("New high score!");
+    } else {
+      console.warn("Score backed up locally:", result.error);
     }
+    return result.success;
   }, [userPhone, userSector]);
 
   // Calculate final score

@@ -86,7 +86,8 @@ export function CanvasRouter() {
     const loadUserData = async () => {
       const userData = await getUserDataAsync();
       if (!userData || !userData.sector) {
-        router.push("/");
+        // No session or no sector, redirect to home (replace to prevent back)
+        router.replace("/");
         return;
       }
 
@@ -137,7 +138,7 @@ export function CanvasRouter() {
             userName={userName}
             userPhone={userPhone}
             userSector={userSector}
-            onExit={() => router.push("/leaderboard")}
+            onExit={() => router.replace("/leaderboard")}
           />
         )}
       </>
@@ -161,7 +162,7 @@ export function CanvasRouter() {
             userName={userName}
             userPhone={userPhone}
             userSector={userSector}
-            onExit={() => router.push("/leaderboard")}
+            onExit={() => router.replace("/leaderboard")}
           />
         )}
       </>
@@ -185,7 +186,7 @@ export function CanvasRouter() {
             userName={userName}
             userPhone={userPhone}
             userSector={userSector}
-            onExit={() => router.push("/leaderboard")}
+            onExit={() => router.replace("/leaderboard")}
           />
         )}
       </>
@@ -209,7 +210,7 @@ export function CanvasRouter() {
             userName={userName}
             userPhone={userPhone}
             userSector={userSector}
-            onExit={() => router.push("/leaderboard")}
+            onExit={() => router.replace("/leaderboard")}
           />
         )}
       </>
@@ -235,7 +236,7 @@ export function CanvasRouter() {
           <Process2DCanvas 
             userPhone={userPhone}
             userSector={userSector}
-            onExit={() => router.push("/leaderboard")}
+            onExit={() => router.replace("/leaderboard")}
           />
         )}
       </>

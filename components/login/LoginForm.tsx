@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { EDUCATION_LEVELS } from "@/lib/constants";
+import { EDUCATION_LEVELS, LOCATIONS } from "@/lib/constants";
 import { validateLoginForm, loginUser } from "@/lib/utils";
 import { FormErrors } from "@/lib/types";
+import { ThankYouGlobe } from "./ThankYouGlobe";
 
 type UserType = "student" | "professional";
 type ScanStep = "idle" | "options" | "scanning" | "confirm-front" | "confirm-back" | "complete";
@@ -15,6 +17,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onStartSimulation }: LoginFormProps) {
+  const router = useRouter();
   const [userType, setUserType] = useState<UserType>("student");
   const [formData, setFormData] = useState({
     name: "",
@@ -23,12 +26,14 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
     educationLevel: "",
     companyName: "",
     companyId: "",
+    companyLocation: "",
   });
   const [businessCardFront, setBusinessCardFront] = useState<string | null>(null);
   const [businessCardBack, setBusinessCardBack] = useState<string | null>(null);
   const [useBusinessCard, setUseBusinessCard] = useState(false);
   const [scanStep, setScanStep] = useState<ScanStep>("idle");
   const [isScanning, setIsScanning] = useState(false);
+  const [showThankYouGlobe, setShowThankYouGlobe] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -121,18 +126,24 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
         businessCardBack: useBusinessCard ? businessCardBack : undefined,
       });
       
-      // Start cinematic fade to black
-      setIsFadingOut(true);
-      
-      // Wait for fade animation then trigger simulation
-      setTimeout(() => {
-        if (onStartSimulation) {
-          onStartSimulation();
-        }
-      }, 1200);
+      // For students: redirect to sector wheel
+      // For professionals without business card scan: show globe
+      if (userType === "student") {
+        // Start cinematic fade to black then redirect to sector wheel
+        setIsFadingOut(true);
+        setTimeout(() => {
+          // Use replace to prevent back navigation to login
+          router.replace("/sector-wheel");
+        }, 1200);
+      } else {
+        // Professional - show thank you globe
+        setShowThankYouGlobe(true);
+        setIsLoading(false);
+      }
     } catch (error) {
       console.error("Login failed:", error);
-      setErrors({ name: "Login failed. Please try again." });
+      const errorMessage = error instanceof Error ? error.message : "Login failed. Please try again.";
+      setErrors({ name: errorMessage });
       setIsLoading(false);
     }
   };
@@ -156,6 +167,46 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
     setBusinessCardBack(null);
   };
 
+  const handleBusinessCardContinue = async () => {
+    if (!formData.companyLocation.trim()) return;
+    if (!formData.name.trim()) {
+      setErrors({ name: "Name is required" });
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      await loginUser({ 
+        ...formData, 
+        userType,
+        businessCardFront: businessCardFront || undefined,
+        businessCardBack: businessCardBack || undefined,
+      });
+      
+      // Show the thank you globe after successful login
+      setShowThankYouGlobe(true);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Login failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "Registration failed. Please try again.";
+      setErrors({ businessCard: errorMessage });
+      setIsLoading(false);
+    }
+  };
+
+  // Show the thank you globe screen - stays on this screen permanently
+  if (showThankYouGlobe) {
+    return (
+      <ThankYouGlobe
+        userName={formData.name}
+        companyName={formData.companyName}
+        companyLocation={formData.companyLocation} onContinue={function (): void {
+          throw new Error("Function not implemented.");
+        } }      />
+    );
+  }
+
   return (
     <>
       {/* Cinematic fade to black overlay */}
@@ -173,13 +224,13 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
 
       {/* Glassmorphic Card */}
       <motion.div 
-        className="w-full max-w-sm mx-auto"
+        className="w-full max-w-[340px] mx-auto px-3"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       >
         <div 
-          className="rounded-3xl p-8 md:p-10 relative overflow-hidden"
+          className="rounded-2xl p-5 md:p-8 relative overflow-hidden"
           style={{
             background: "rgb(255, 255, 255)",
             backdropFilter: "blur(40px)",
@@ -191,7 +242,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
           <div className="relative z-10">
             {/* White Logo Container */}
             <motion.div 
-              className="mb-8 p-4 rounded-xl flex justify-center items-center gap-5"
+              className="mb-4 p-2 rounded-xl flex justify-center items-center gap-3"
               style={{
                 background: "#FFFFFF",
                 boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
@@ -203,32 +254,32 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
               <Image
                 src="/ats.png"
                 alt="Accent Techno Solutions"
-                width={90}
-                height={50}
+                width={60}
+                height={35}
                 className="object-contain"
               />
               <div 
-                className="w-px h-8" 
+                className="w-px h-5" 
                 style={{ background: "linear-gradient(180deg, transparent, rgba(46, 48, 147, 0.3), transparent)" }} 
               />
               <Image
                 src="/sit.png"
                 alt="Suvidya Institute of Technology"
-                width={90}
-                height={50}
+                width={60}
+                height={35}
                 className="object-contain"
               />
             </motion.div>
 
             {/* User Type Toggle - Compact */}
             <motion.div
-              className="mb-5 flex items-center justify-center gap-3"
+              className="mb-3 flex items-center justify-center gap-2"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <motion.span 
-                className="text-xs font-medium"
+                className="text-[11px] font-medium"
                 animate={{ 
                   color: userType === "student" ? "#2E3093" : "rgba(46, 48, 147, 0.4)",
                 }}
@@ -241,7 +292,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
               <button
                 type="button"
                 onClick={() => handleUserTypeChange(userType === "student" ? "professional" : "student")}
-                className="relative w-14 h-7 rounded-full p-0.5 transition-all duration-300 focus:outline-none"
+                className="relative w-10 h-5 rounded-full p-0.5 transition-all duration-300 focus:outline-none"
                 style={{
                   background: userType === "professional" 
                     ? "linear-gradient(135deg, #2E3093 0%, #2A6BB5 100%)"
@@ -250,9 +301,9 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                 }}
               >
                 <motion.div
-                  className="w-6 h-6 rounded-full bg-white flex items-center justify-center"
+                  className="w-4 h-4 rounded-full bg-white flex items-center justify-center"
                   animate={{ 
-                    x: userType === "student" ? 0 : 26,
+                    x: userType === "student" ? 0 : 18,
                   }}
                   transition={{
                     type: "spring",
@@ -269,11 +320,11 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                     transition={{ duration: 0.3 }}
                   >
                     {userType === "student" ? (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E3093" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#2E3093" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
                       </svg>
                     ) : (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2E3093" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#2E3093" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="2" y="7" width="20" height="14" rx="2"/>
                         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
                       </svg>
@@ -283,7 +334,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
               </button>
               
               <motion.span 
-                className="text-xs font-medium"
+                className="text-[11px] font-medium"
                 animate={{ 
                   color: userType === "professional" ? "#2E3093" : "rgba(46, 48, 147, 0.4)",
                 }}
@@ -293,7 +344,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
               </motion.span>
             </motion.div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-3">
               {/* Name Field */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -302,7 +353,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
               >
                 <label
                   htmlFor="name"
-                  className="block text-sm font-medium mb-2"
+                  className="block text-xs font-medium mb-1"
                   style={{ color: "#2E3093" }}
                 >
                   Name
@@ -314,7 +365,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter your name"
-                  className="w-full px-4 py-3.5 rounded-xl text-base transition-all duration-300 focus:outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm transition-all duration-300 focus:outline-none"
                   style={{
                     background: "#FFFFFF",
                     border: errors.name 
@@ -351,7 +402,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                   >
                     <label
                       htmlFor="email"
-                      className="block text-sm font-medium mb-2"
+                      className="block text-xs font-medium mb-1"
                       style={{ color: "#2E3093" }}
                     >
                       Email
@@ -363,7 +414,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="Enter your email"
-                      className="w-full px-4 py-3.5 rounded-xl text-base transition-all duration-300 focus:outline-none"
+                      className="w-full px-3 py-2.5 rounded-lg text-sm transition-all duration-300 focus:outline-none"
                       style={{
                         background: "#FFFFFF",
                         border: errors.email 
@@ -397,7 +448,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                   >
                     <label
                       htmlFor="phone"
-                      className="block text-sm font-medium mb-2"
+                      className="block text-xs font-medium mb-1"
                       style={{ color: "#2E3093" }}
                     >
                       Phone Number
@@ -409,7 +460,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                       value={formData.phone}
                       onChange={handleChange}
                       placeholder="Enter your phone number"
-                      className="w-full px-4 py-3.5 rounded-xl text-base transition-all duration-300 focus:outline-none"
+                      className="w-full px-3 py-2.5 rounded-lg text-sm transition-all duration-300 focus:outline-none"
                       style={{
                         background: "#FFFFFF",
                         border: errors.phone 
@@ -443,7 +494,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                   >
                     <label
                       htmlFor="educationLevel"
-                      className="block text-sm font-medium mb-2"
+                      className="block text-xs font-medium mb-1"
                       style={{ color: "#2E3093" }}
                     >
                       Education Level
@@ -454,7 +505,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                         name="educationLevel"
                         value={formData.educationLevel}
                         onChange={handleChange}
-                        className="w-full px-4 py-3.5 rounded-xl text-base appearance-none cursor-pointer transition-all duration-300 focus:outline-none"
+                        className="w-full px-3 py-2.5 rounded-lg text-sm appearance-none cursor-pointer transition-all duration-300 focus:outline-none"
                         style={{
                           background: "#FFFFFF",
                           border: errors.educationLevel 
@@ -515,13 +566,13 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                     transition={{ duration: 0.5, delay: 0.35 }}
                   >
                     <div 
-                      className="p-4 rounded-xl"
+                      className="p-3 rounded-lg"
                       style={{
                         background: "linear-gradient(135deg, rgba(46, 48, 147, 0.05) 0%, rgba(42, 107, 181, 0.05) 100%)",
                         border: "1px dashed rgba(46, 48, 147, 0.3)",
                       }}
                     >
-                      <label className="flex items-center gap-3 cursor-pointer">
+                      <label className="flex items-center gap-2 cursor-pointer">
                         <div className="relative">
                           <input
                             type="checkbox"
@@ -530,7 +581,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                             className="sr-only"
                           />
                           <motion.div
-                            className="w-12 h-7 rounded-full p-1"
+                            className="w-10 h-6 rounded-full p-1"
                             style={{
                               background: useBusinessCard 
                                 ? "linear-gradient(135deg, #2E3093 0%, #2A6BB5 100%)"
@@ -542,18 +593,18 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                             }}
                           >
                             <motion.div
-                              className="w-5 h-5 rounded-full bg-white shadow-md"
-                              animate={{ x: useBusinessCard ? 20 : 0 }}
+                              className="w-4 h-4 rounded-full bg-white shadow-md"
+                              animate={{ x: useBusinessCard ? 16 : 0 }}
                               transition={{ type: "spring", stiffness: 500, damping: 30 }}
                             />
                           </motion.div>
                         </div>
                         <div>
-                          <span className="text-sm font-medium" style={{ color: "#2E3093" }}>
+                          <span className="text-xs font-medium" style={{ color: "#2E3093" }}>
                             I have a business card
                           </span>
-                          <p className="text-xs mt-0.5" style={{ color: "rgba(46, 48, 147, 0.6)" }}>
-                            Upload front & back to auto-fill details
+                          <p className="text-[10px] mt-0.5" style={{ color: "rgba(46, 48, 147, 0.6)" }}>
+                            Upload front & back
                           </p>
                         </div>
                       </label>
@@ -691,7 +742,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                                 <motion.button
                                   type="button"
                                   onClick={() => setScanStep(scanStep === "options" ? "idle" : "options")}
-                                  className="w-full py-6 rounded-xl flex flex-col items-center justify-center gap-3 transition-all duration-300 relative"
+                                  className="w-full py-4 rounded-lg flex flex-col items-center justify-center gap-2 transition-all duration-300 relative"
                                   style={{
                                     background: "linear-gradient(135deg, rgba(46, 48, 147, 0.06) 0%, rgba(42, 107, 181, 0.06) 100%)",
                                     border: errors.businessCard 
@@ -702,21 +753,21 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                                   whileTap={{ scale: 0.99 }}
                                 >
                                   <motion.div
-                                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                                    className="w-10 h-10 rounded-full flex items-center justify-center"
                                     style={{ background: "rgba(46, 48, 147, 0.1)" }}
                                     animate={{ scale: [1, 1.05, 1] }}
                                     transition={{ duration: 2, repeat: Infinity }}
                                   >
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2E3093" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E3093" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                       <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                                       <circle cx="12" cy="13" r="4"/>
                                     </svg>
                                   </motion.div>
                                   <div className="text-center">
-                                    <span className="text-sm font-semibold block" style={{ color: "#2E3093" }}>
+                                    <span className="text-xs font-semibold block" style={{ color: "#2E3093" }}>
                                       Scan Business Card
                                     </span>
-                                    <span className="text-xs mt-1 block" style={{ color: "rgba(46, 48, 147, 0.5)" }}>
+                                    <span className="text-[10px] mt-0.5 block" style={{ color: "rgba(46, 48, 147, 0.5)" }}>
                                       Capture front & back
                                     </span>
                                   </div>
@@ -994,57 +1045,120 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                               <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="rounded-xl overflow-hidden"
+                                className="rounded-lg overflow-hidden"
                                 style={{
                                   background: "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%)",
                                   border: "2px solid rgba(16, 185, 129, 0.3)",
                                 }}
                               >
-                                <div className="p-4">
-                                  <div className="flex items-center gap-2 mb-3">
+                                <div className="p-3">
+                                  <div className="flex items-center gap-2 mb-2">
                                     <motion.div
-                                      className="w-7 h-7 rounded-full flex items-center justify-center"
+                                      className="w-6 h-6 rounded-full flex items-center justify-center"
                                       style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)" }}
                                       initial={{ scale: 0 }}
                                       animate={{ scale: 1 }}
                                       transition={{ type: "spring", stiffness: 500 }}
                                     >
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                         <polyline points="20 6 9 17 4 12"/>
                                       </svg>
                                     </motion.div>
-                                    <span className="text-sm font-semibold" style={{ color: "#059669" }}>Business Card Scanned Successfully!</span>
+                                    <span className="text-xs font-semibold" style={{ color: "#059669" }}>Business Card Scanned!</span>
                                   </div>
-                                  <div className="flex gap-2">
+                                  <div className="flex gap-2 mb-3">
                                     <div 
-                                      className="flex-1 h-20 rounded-lg bg-center bg-cover relative"
+                                      className="flex-1 h-14 rounded-lg bg-center bg-cover relative"
                                       style={{ backgroundImage: `url(${businessCardFront})`, border: "1px solid rgba(16, 185, 129, 0.3)" }}
                                     >
-                                      <span className="absolute bottom-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-white/90 font-medium" style={{ color: "#2E3093" }}>Front</span>
+                                      <span className="absolute bottom-1 left-1 text-[9px] px-1 py-0.5 rounded bg-white/90 font-medium" style={{ color: "#2E3093" }}>Front</span>
                                     </div>
                                     <div 
-                                      className="flex-1 h-20 rounded-lg bg-center bg-cover relative"
+                                      className="flex-1 h-14 rounded-lg bg-center bg-cover relative"
                                       style={{ backgroundImage: `url(${businessCardBack})`, border: "1px solid rgba(16, 185, 129, 0.3)" }}
                                     >
-                                      <span className="absolute bottom-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-white/90 font-medium" style={{ color: "#2E3093" }}>Back</span>
+                                      <span className="absolute bottom-1 left-1 text-[9px] px-1 py-0.5 rounded bg-white/90 font-medium" style={{ color: "#2E3093" }}>Back</span>
                                     </div>
                                   </div>
-                                  <motion.button
-                                    type="button"
-                                    onClick={() => {
-                                      setBusinessCardFront(null);
-                                      setBusinessCardBack(null);
-                                      setScanStep("idle");
-                                    }}
-                                    className="w-full mt-3 py-2 rounded-lg text-xs font-medium"
-                                    style={{ 
-                                      background: "rgba(46, 48, 147, 0.1)",
-                                      color: "#2E3093",
-                                    }}
-                                    whileHover={{ background: "rgba(46, 48, 147, 0.15)" }}
-                                  >
-                                    Rescan Both
-                                  </motion.button>
+
+                                  {/* Location Input for Globe */}
+                                  <div className="mb-3">
+                                    <label
+                                      htmlFor="companyLocationScan"
+                                      className="block text-[10px] font-medium mb-1"
+                                      style={{ color: "#059669" }}
+                                    >
+                                      Where are you based?
+                                    </label>
+                                    <div className="relative">
+                                      <select
+                                        id="companyLocationScan"
+                                        name="companyLocation"
+                                        value={formData.companyLocation}
+                                        onChange={handleChange}
+                                        className="w-full px-2.5 py-2 rounded-lg text-xs transition-all duration-300 focus:outline-none appearance-none cursor-pointer"
+                                        style={{
+                                          background: "#FFFFFF",
+                                          border: "2px solid rgba(16, 185, 129, 0.3)",
+                                          color: formData.companyLocation ? "#2E3093" : "#9CA3AF",
+                                        }}
+                                        onFocus={(e) => {
+                                          e.target.style.borderColor = "#10B981";
+                                        }}
+                                        onBlur={(e) => {
+                                          e.target.style.borderColor = "rgba(16, 185, 129, 0.3)";
+                                        }}
+                                      >
+                                        <option value="">Select your location</option>
+                                        {LOCATIONS.map((loc) => (
+                                          <option key={loc.value} value={loc.value}>
+                                            {loc.label}
+                                          </option>
+                                        ))}
+                                      </select>
+                                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                                        <svg className="h-4 w-4" style={{ color: "#10B981" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex gap-2">
+                                    <motion.button
+                                      type="button"
+                                      onClick={() => {
+                                        setBusinessCardFront(null);
+                                        setBusinessCardBack(null);
+                                        setScanStep("idle");
+                                      }}
+                                      className="flex-1 py-2 rounded-lg text-xs font-medium"
+                                      style={{ 
+                                        background: "rgba(46, 48, 147, 0.1)",
+                                        color: "#2E3093",
+                                      }}
+                                      whileHover={{ background: "rgba(46, 48, 147, 0.15)" }}
+                                      whileTap={{ scale: 0.98 }}
+                                    >
+                                      Rescan
+                                    </motion.button>
+                                    <motion.button
+                                      type="button"
+                                      onClick={handleBusinessCardContinue}
+                                      disabled={isLoading || !formData.companyLocation.trim()}
+                                      className="flex-1 py-2 rounded-lg text-xs font-medium text-white"
+                                      style={{ 
+                                        background: formData.companyLocation.trim() && !isLoading
+                                          ? "linear-gradient(135deg, #10B981 0%, #059669 100%)"
+                                          : "rgba(16, 185, 129, 0.4)",
+                                        cursor: formData.companyLocation.trim() && !isLoading ? "pointer" : "not-allowed",
+                                      }}
+                                      whileHover={formData.companyLocation.trim() && !isLoading ? { scale: 1.02 } : {}}
+                                      whileTap={formData.companyLocation.trim() && !isLoading ? { scale: 0.98 } : {}}
+                                    >
+                                      {isLoading ? "Saving..." : "Continue →"}
+                                    </motion.button>
+                                  </div>
                                 </div>
                               </motion.div>
                             )}
@@ -1068,7 +1182,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="space-y-5 overflow-hidden"
+                        className="space-y-3 overflow-hidden"
                       >
                         {/* Company Name Field */}
                         <motion.div
@@ -1078,7 +1192,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                         >
                           <label
                             htmlFor="companyName"
-                            className="block text-sm font-medium mb-2"
+                            className="block text-xs font-medium mb-1"
                             style={{ color: "#2E3093" }}
                           >
                             Company Name
@@ -1090,7 +1204,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                             value={formData.companyName}
                             onChange={handleChange}
                             placeholder="Enter your company name"
-                            className="w-full px-4 py-3.5 rounded-xl text-base transition-all duration-300 focus:outline-none"
+                            className="w-full px-3 py-2.5 rounded-lg text-sm transition-all duration-300 focus:outline-none"
                             style={{
                               background: "#FFFFFF",
                               border: errors.companyName 
@@ -1115,47 +1229,59 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                           )}
                         </motion.div>
 
-                        {/* Company ID Field */}
+                        {/* Company Location Field */}
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: 0.2 }}
                         >
                           <label
-                            htmlFor="companyId"
-                            className="block text-sm font-medium mb-2"
+                            htmlFor="companyLocation"
+                            className="block text-xs font-medium mb-1"
                             style={{ color: "#2E3093" }}
                           >
-                            Company ID
+                            Based In / Location
                           </label>
-                          <input
-                            type="text"
-                            id="companyId"
-                            name="companyId"
-                            value={formData.companyId}
-                            onChange={handleChange}
-                            placeholder="Enter your company ID"
-                            className="w-full px-4 py-3.5 rounded-xl text-base transition-all duration-300 focus:outline-none"
-                            style={{
-                              background: "#FFFFFF",
-                              border: errors.companyId 
-                                ? "2px solid #FAE452" 
-                                : "2px solid rgba(46, 48, 147, 0.3)",
-                              color: "#2E3093",
-                              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                            }}
-                            onFocus={(e) => {
-                              e.target.style.borderColor = "#2E3093";
-                              e.target.style.boxShadow = "0 4px 16px rgba(46, 48, 147, 0.25)";
-                            }}
-                            onBlur={(e) => {
-                              e.target.style.borderColor = errors.companyId ? "#FAE452" : "rgba(46, 48, 147, 0.3)";
-                              e.target.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
-                            }}
-                          />
-                          {errors.companyId && (
+                          <div className="relative">
+                            <select
+                              id="companyLocation"
+                              name="companyLocation"
+                              value={formData.companyLocation}
+                              onChange={handleChange}
+                              className="w-full px-3 py-2.5 rounded-lg text-sm transition-all duration-300 focus:outline-none appearance-none cursor-pointer"
+                              style={{
+                                background: "#FFFFFF",
+                                border: errors.companyLocation 
+                                  ? "2px solid #FAE452" 
+                                  : "2px solid rgba(46, 48, 147, 0.3)",
+                                color: formData.companyLocation ? "#2E3093" : "#9CA3AF",
+                                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.borderColor = "#2E3093";
+                                e.target.style.boxShadow = "0 4px 16px rgba(46, 48, 147, 0.25)";
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.borderColor = errors.companyLocation ? "#FAE452" : "rgba(46, 48, 147, 0.3)";
+                                e.target.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+                              }}
+                            >
+                              <option value="">Select your location</option>
+                              {LOCATIONS.map((loc) => (
+                                <option key={loc.value} value={loc.value}>
+                                  {loc.label}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
+                              <svg className="h-4 w-4" style={{ color: "#2E3093" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </div>
+                          </div>
+                          {errors.companyLocation && (
                             <p className="mt-1.5 text-xs" style={{ color: "#FAE452" }}>
-                              {errors.companyId}
+                              {errors.companyLocation}
                             </p>
                           )}
                         </motion.div>
@@ -1169,7 +1295,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
               <motion.button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 rounded-xl text-base font-semibold tracking-wide transition-all duration-300 mt-8"
+                className="w-full py-3 rounded-lg text-sm font-semibold tracking-wide transition-all duration-300 mt-4"
                 style={{
                   background: isLoading 
                     ? "rgba(250, 228, 82, 0.4)" 
@@ -1189,7 +1315,7 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <motion.span
-                      className="w-5 h-5 border-2 rounded-full"
+                      className="w-4 h-4 border-2 rounded-full"
                       style={{ borderColor: "rgba(46, 48, 147, 0.3)", borderTopColor: "#2E3093" }}
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
