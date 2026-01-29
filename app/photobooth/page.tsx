@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ThankYouPhotobooth } from "@/components/login/ThankYouPhotobooth";
 import { getUserDataAsync } from "@/lib/utils";
 
-export default function PhotoboothPage() {
+function PhotoboothContent() {
   const searchParams = useSearchParams();
   const nextRedirect = searchParams.get("next") || "/sector-wheel";
   const [userData, setUserData] = useState<{ name: string; educationLevel?: string } | null>(null);
@@ -71,5 +71,43 @@ export default function PhotoboothPage() {
       educationLevel={userData?.educationLevel}
       nextRedirect={nextRedirect}
     />
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ background: "#0a0a1a" }}
+    >
+      <div className="flex flex-col items-center gap-4">
+        <div
+          className="w-12 h-12 rounded-full border-3"
+          style={{
+            borderColor: "#FAE45230",
+            borderTopColor: "#FAE452",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+        <p className="text-sm" style={{ color: "#ffffff60" }}>
+          Loading...
+        </p>
+      </div>
+      <style jsx>{`
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+export default function PhotoboothPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <PhotoboothContent />
+    </Suspense>
   );
 }

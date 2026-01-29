@@ -703,14 +703,16 @@ export default function Process2DCanvas({
     
     const expectedSlot = getExpectedSlot(draggingComponent);
     
-    if (!isCorrectNext(draggingComponent)) {
-      setWrongAttempts(prev => prev + 1);
-      setHintMessage("Incorrect sequence. Think about the process flow.");
+    // Check if component is already placed
+    const isAlreadyPlaced = placedComponents.some(p => p.componentId === draggingComponent);
+    if (isAlreadyPlaced) {
+      setHintMessage("This component is already installed.");
       setShowHint(true);
       setDraggingComponent(null);
       return;
     }
     
+    // Only check if component is in the correct slot location (no sequence requirement)
     if (!expectedSlot || expectedSlot.slotId !== slotId) {
       setWrongAttempts(prev => prev + 1);
       setHintMessage("This equipment belongs in a different location.");
