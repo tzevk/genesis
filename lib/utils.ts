@@ -179,7 +179,11 @@ export const fetchUserFromDB = async (phone: string): Promise<ExtendedUserData |
 };
 
 // Form validation
-export const validateLoginForm = (formData: Omit<UserData, "sector">): FormErrors => {
+export const validateLoginForm = (
+  formData: Omit<UserData, "sector">,
+  userType: "student" | "professional" = "student",
+  useBusinessCard: boolean = false
+): FormErrors => {
   const errors: FormErrors = {};
 
   if (!formData.name.trim()) {
@@ -188,20 +192,38 @@ export const validateLoginForm = (formData: Omit<UserData, "sector">): FormError
     errors.name = "Name must be at least 2 characters";
   }
 
-  if (!formData.email.trim()) {
-    errors.email = "Email is required";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-    errors.email = "Please enter a valid email address";
-  }
+  if (userType === "student") {
+    // Student validation
+    if (!formData.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = "Please enter a valid email address";
+    }
 
-  if (!formData.phone.trim()) {
-    errors.phone = "Phone number is required";
-  } else if (!/^[\d\s\-+()]{10,}$/.test(formData.phone)) {
-    errors.phone = "Please enter a valid phone number";
-  }
+    if (!formData.phone.trim()) {
+      errors.phone = "Phone number is required";
+    } else if (!/^[\d\s\-+()]{10,}$/.test(formData.phone)) {
+      errors.phone = "Please enter a valid phone number";
+    }
 
-  if (!formData.educationLevel) {
-    errors.educationLevel = "Please select your education level";
+    if (!formData.educationLevel) {
+      errors.educationLevel = "Please select your education level";
+    }
+  } else {
+    // Industry Professional validation
+    if (useBusinessCard) {
+      // Business card mode - no additional validation needed
+      // Images are optional but helpful
+    } else {
+      // Manual entry mode
+      if (!formData.companyName?.trim()) {
+        errors.companyName = "Company name is required";
+      }
+
+      if (!formData.companyId?.trim()) {
+        errors.companyId = "Company ID is required";
+      }
+    }
   }
 
   return errors;
