@@ -289,7 +289,7 @@ export default function SectorWheelPage() {
       {phase === "intro" && (
         <motion.div
           key="intro"
-          className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden cursor-pointer"
+          className="min-h-screen min-h-[568px] flex flex-col items-center justify-center p-3 xs:p-4 relative overflow-hidden cursor-pointer"
           onClick={showContinue ? handleContinue : undefined}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8 }}
@@ -298,13 +298,13 @@ export default function SectorWheelPage() {
 
           {/* Statement text */}
           <motion.div
-            className="relative z-10 text-center px-8"
+            className="relative z-10 text-center px-4 xs:px-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
             <h1
-              className="text-2xl md:text-4xl tracking-tight"
+              className="text-xl xs:text-2xl md:text-4xl tracking-tight"
               style={{ 
                 color: "#ffffff",
                 fontWeight: 600,
@@ -341,7 +341,7 @@ export default function SectorWheelPage() {
             {/* Sectors list */}
             {showSectors && (
               <motion.p
-                className="mt-8 text-lg md:text-xl font-light tracking-wide"
+                className="mt-6 xs:mt-8 text-sm xs:text-lg md:text-xl font-light tracking-wide"
                 style={{ color: "rgba(255, 255, 255, 0.7)" }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -362,7 +362,7 @@ export default function SectorWheelPage() {
             {/* Subtitle */}
             {showSubtitle && (
               <motion.p
-                className="mt-4 text-sm md:text-base font-light"
+                className="mt-3 xs:mt-4 text-xs xs:text-sm md:text-base font-light"
                 style={{ color: "rgba(255, 255, 255, 0.5)" }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -375,7 +375,7 @@ export default function SectorWheelPage() {
             {/* Tap to continue */}
             {showContinue && (
               <motion.div
-                className="mt-12 flex flex-col items-center gap-2"
+                className="mt-8 xs:mt-12 flex flex-col items-center gap-1.5 xs:gap-2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
@@ -418,14 +418,14 @@ export default function SectorWheelPage() {
       {phase === "selection" && (
         <motion.div
           key="selection"
-          className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
+          className="min-h-screen min-h-[568px] flex flex-col items-center justify-center p-3 xs:p-4 relative overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
           <WaveBackground />
 
-          <div className="relative z-10 text-center w-full max-w-2xl px-4">
+          <div className="relative z-10 text-center w-full max-w-2xl px-2 xs:px-4">
             {/* Header */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
@@ -433,7 +433,7 @@ export default function SectorWheelPage() {
               transition={{ duration: 0.6 }}
             >
               <h1 
-                className="text-2xl md:text-3xl mb-2 tracking-tight" 
+                className="text-xl xs:text-2xl md:text-3xl mb-1 xs:mb-2 tracking-tight" 
                 style={{ 
                   color: "#ffffff",
                   fontWeight: 600,
@@ -443,18 +443,18 @@ export default function SectorWheelPage() {
               >
                 Choose your <span style={{ color: '#FAE452' }}>sector</span>
               </h1>
-              <p className="text-sm font-light tracking-wide mb-8" style={{ color: "rgba(255, 255, 255, 0.6)" }}>
+              <p className="text-xs xs:text-sm font-light tracking-wide mb-4 xs:mb-8" style={{ color: "rgba(255, 255, 255, 0.6)" }}>
                 Select the engineering domain you want to explore
               </p>
             </motion.div>
 
             {/* Sector Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 xs:gap-4 mb-4 xs:mb-8">
               {SECTORS.map((sector, index) => (
                 <motion.button
                   key={sector.name}
                   onClick={() => handleSectorSelect(sector.name)}
-                  className="relative p-6 rounded-2xl transition-all duration-300 group"
+                  className="relative p-3 xs:p-6 rounded-xl xs:rounded-2xl transition-all duration-300 group"
                   style={{
                     background: selectedSector === sector.name 
                       ? "rgba(250, 228, 82, 0.15)" 
@@ -477,12 +477,12 @@ export default function SectorWheelPage() {
                   {/* Selection indicator */}
                   {selectedSector === sector.name && (
                     <motion.div
-                      className="absolute top-3 right-3"
+                      className="absolute top-2 right-2 xs:top-3 xs:right-3"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     >
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <svg width="16" height="16" className="xs:w-5 xs:h-5" viewBox="0 0 20 20" fill="none">
                         <circle cx="10" cy="10" r="10" fill="#FAE452"/>
                         <path d="M6 10l3 3 5-6" stroke="#2E3093" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
@@ -491,7 +491,7 @@ export default function SectorWheelPage() {
 
                   {/* Icon */}
                   <div 
-                    className="mb-3 flex justify-center transition-colors duration-300"
+                    className="mb-2 xs:mb-3 flex justify-center transition-colors duration-300 [&>svg]:w-6 [&>svg]:h-6 xs:[&>svg]:w-8 xs:[&>svg]:h-8"
                     style={{ 
                       color: selectedSector === sector.name ? "#FAE452" : "rgba(255, 255, 255, 0.7)" 
                     }}
@@ -501,7 +501,7 @@ export default function SectorWheelPage() {
 
                   {/* Sector name */}
                   <h3 
-                    className="text-lg font-semibold mb-1 transition-colors duration-300"
+                    className="text-sm xs:text-lg font-semibold mb-0.5 xs:mb-1 transition-colors duration-300"
                     style={{ 
                       color: selectedSector === sector.name ? "#FAE452" : "#ffffff" 
                     }}
@@ -511,7 +511,7 @@ export default function SectorWheelPage() {
 
                   {/* Description */}
                   <p 
-                    className="text-xs font-light leading-relaxed transition-colors duration-300"
+                    className="text-[10px] xs:text-xs font-light leading-relaxed transition-colors duration-300 hidden xs:block"
                     style={{ 
                       color: selectedSector === sector.name 
                         ? "rgba(250, 228, 82, 0.8)" 
@@ -533,7 +533,7 @@ export default function SectorWheelPage() {
               <motion.button
                 onClick={handleConfirmSelection}
                 disabled={!selectedSector || isSubmitting}
-                className="px-10 py-4 rounded-full text-sm tracking-wider font-medium transition-all duration-300 disabled:cursor-not-allowed"
+                className="px-6 xs:px-10 py-3 xs:py-4 rounded-full text-xs xs:text-sm tracking-wider font-medium transition-all duration-300 disabled:cursor-not-allowed"
                 style={{
                   background: selectedSector ? "#FAE452" : "rgba(250, 228, 82, 0.3)",
                   color: "#2E3093",

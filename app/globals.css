@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Custom breakpoint for small mobile devices (iPhone SE: 320px) */
+@custom-media --xs-and-up (min-width: 375px);
+
 :root {
   --background: #0f172a;
   --foreground: #f8fafc;
@@ -10,6 +13,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Custom xs breakpoint for 375px+ (allows 320px as base) */
+  --breakpoint-xs: 375px;
 }
 
 body {

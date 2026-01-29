@@ -126,14 +126,19 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
         businessCardBack: useBusinessCard ? businessCardBack : undefined,
       });
       
-      // For students: redirect to sector wheel
+      // For students: redirect based on education level
       // For professionals without business card scan: show globe
       if (userType === "student") {
-        // Start cinematic fade to black then redirect to sector wheel
+        // Start cinematic fade to black then redirect
         setIsFadingOut(true);
         setTimeout(() => {
           // Use replace to prevent back navigation to login
-          router.replace("/sector-wheel");
+          // If education level is "Others", redirect to industry quiz instructions
+          if (formData.educationLevel === "Others") {
+            router.replace("/industry-quiz-instructions");
+          } else {
+            router.replace("/sector-wheel");
+          }
         }, 1200);
       } else {
         // Professional - show thank you globe

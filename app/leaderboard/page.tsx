@@ -186,7 +186,7 @@ function RankMedal({ rank }: { rank: number }) {
   
   return (
     <motion.div 
-      className="w-14 h-14 rounded-full flex items-center justify-center relative"
+      className="w-10 h-10 xs:w-14 xs:h-14 rounded-full flex items-center justify-center relative"
       style={{ 
         background: style.bg,
         boxShadow: style.glow,
@@ -194,7 +194,7 @@ function RankMedal({ rank }: { rank: number }) {
       animate={{ scale: [1, 1.05, 1] }}
       transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
     >
-      <span className="text-2xl font-black" style={{ color: style.text }}>
+      <span className="text-lg xs:text-2xl font-black" style={{ color: style.text }}>
         {rank}
       </span>
       {rank === 1 && (
@@ -246,41 +246,41 @@ export default function LiveLeaderboardPage() {
   }, [fetchLeaderboard]);
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
+    <div className="min-h-screen min-h-[568px] flex flex-col relative overflow-hidden">
       {/* Animated Background */}
       <AnimatedBackground />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
-        <header className="px-4 md:px-8 py-4 md:py-6">
+        <header className="px-2 xs:px-4 md:px-8 py-2 xs:py-4 md:py-6">
           <div 
-            className="max-w-6xl mx-auto flex items-center justify-between p-4 md:p-6 rounded-2xl"
+            className="max-w-6xl mx-auto flex items-center justify-between p-2 xs:p-4 md:p-6 rounded-xl xs:rounded-2xl"
             style={{ 
               background: `${BRAND.white}10`,
               backdropFilter: "blur(20px)",
               border: `1px solid ${BRAND.white}20`,
             }}
           >
-            <div className="flex items-center gap-3 md:gap-5">
+            <div className="flex items-center gap-2 xs:gap-3 md:gap-5">
               <motion.div
-                className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center"
+                className="w-10 h-10 xs:w-12 xs:h-12 md:w-16 md:h-16 rounded-lg xs:rounded-xl flex items-center justify-center"
                 style={{ background: BRAND.yellow }}
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
               >
-                <TrophyIcon size={32} color={BRAND.indigo} />
+                <TrophyIcon size={24} color={BRAND.indigo} />
               </motion.div>
               <div>
-                <h1 className="text-2xl md:text-4xl font-black tracking-tight" style={{ color: BRAND.white }}>
+                <h1 className="text-lg xs:text-2xl md:text-4xl font-black tracking-tight" style={{ color: BRAND.white }}>
                   LEADERBOARD
                 </h1>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-1.5 xs:gap-2 mt-0.5 xs:mt-1">
                   <div 
-                    className="h-0.5 w-16 md:w-24 rounded-full"
+                    className="h-0.5 w-10 xs:w-16 md:w-24 rounded-full"
                     style={{ background: BRAND.indigo }}
                   />
-                  <span className="text-xs md:text-sm font-medium" style={{ color: BRAND.yellow }}>
+                  <span className="text-[10px] xs:text-xs md:text-sm font-medium" style={{ color: BRAND.yellow }}>
                     GENESIS 2026
                   </span>
                 </div>
@@ -288,25 +288,25 @@ export default function LiveLeaderboardPage() {
             </div>
 
             <div className="text-right">
-              <div className="flex items-center gap-2 justify-end mb-2">
+              <div className="flex items-center gap-1.5 xs:gap-2 justify-end mb-1 xs:mb-2">
                 <motion.div
-                  className="w-2 h-2 md:w-3 md:h-3 rounded-full"
+                  className="w-1.5 h-1.5 xs:w-2 xs:h-2 md:w-3 md:h-3 rounded-full"
                   style={{ background: "#22C55E" }}
                   animate={{ opacity: [1, 0.4, 1], scale: [1, 1.2, 1] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 />
-                <span className="text-xs md:text-sm font-bold tracking-wider" style={{ color: BRAND.white }}>
+                <span className="text-[10px] xs:text-xs md:text-sm font-bold tracking-wider" style={{ color: BRAND.white }}>
                   LIVE
                 </span>
               </div>
-              <p className="text-[10px] md:text-xs hidden sm:block" style={{ color: `${BRAND.white}60` }}>
+              <p className="text-[9px] xs:text-[10px] md:text-xs hidden sm:block" style={{ color: `${BRAND.white}60` }}>
                 {lastUpdated.toLocaleTimeString()}
               </p>
               <div 
-                className="inline-block mt-2 px-3 py-1 rounded-full"
+                className="inline-block mt-1 xs:mt-2 px-2 xs:px-3 py-0.5 xs:py-1 rounded-full"
                 style={{ background: `${BRAND.yellow}20`, border: `1px solid ${BRAND.yellow}40` }}
               >
-                <span className="text-sm md:text-base font-bold" style={{ color: BRAND.yellow }}>
+                <span className="text-xs xs:text-sm md:text-base font-bold" style={{ color: BRAND.yellow }}>
                   {totalParticipants} Players
                 </span>
               </div>
@@ -315,9 +315,9 @@ export default function LiveLeaderboardPage() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 px-4 md:px-8 pb-4 md:pb-8 overflow-hidden">
+        <main className="flex-1 px-2 xs:px-4 md:px-8 pb-2 xs:pb-4 md:pb-8 overflow-hidden">
           <div 
-            className="max-w-6xl mx-auto h-full rounded-2xl overflow-hidden"
+            className="max-w-6xl mx-auto h-full rounded-xl xs:rounded-2xl overflow-hidden"
             style={{ 
               background: `${BRAND.white}08`,
               backdropFilter: "blur(20px)",
@@ -388,17 +388,17 @@ export default function LiveLeaderboardPage() {
                           layout
                         >
                           {/* Mobile Card Layout */}
-                          <div className="md:hidden p-4 flex items-center gap-4">
+                          <div className="md:hidden p-2 xs:p-4 flex items-center gap-2 xs:gap-4">
                             {/* Rank */}
                             <div className="flex-shrink-0">
                               {isTopThree ? (
                                 <RankMedal rank={entry.rank} />
                               ) : (
                                 <div 
-                                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                                  className="w-10 h-10 xs:w-12 xs:h-12 rounded-full flex items-center justify-center"
                                   style={{ background: `${BRAND.white}10`, border: `1px solid ${BRAND.white}20` }}
                                 >
-                                  <span className="text-lg font-bold" style={{ color: BRAND.white }}>
+                                  <span className="text-sm xs:text-lg font-bold" style={{ color: BRAND.white }}>
                                     {entry.rank}
                                   </span>
                                 </div>
@@ -408,13 +408,13 @@ export default function LiveLeaderboardPage() {
                             {/* Player Info */}
                             <div className="flex-1 min-w-0">
                               <p
-                                className="text-base font-bold truncate"
+                                className="text-sm xs:text-base font-bold truncate"
                                 style={{ color: isTopThree ? BRAND.yellow : BRAND.white }}
                               >
                                 {entry.name}
                               </p>
                               <span
-                                className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                className="inline-block mt-0.5 xs:mt-1 px-1.5 xs:px-2 py-0.5 rounded-full text-[9px] xs:text-[10px] font-semibold"
                                 style={{
                                   background: `${BRAND.yellow}15`,
                                   color: BRAND.yellow,
@@ -428,7 +428,7 @@ export default function LiveLeaderboardPage() {
                             {/* Score */}
                             <div className="text-right flex-shrink-0">
                               <motion.span
-                                className="text-3xl font-black"
+                                className="text-2xl xs:text-3xl font-black"
                                 style={{ color: isTopThree ? BRAND.yellow : BRAND.white }}
                                 key={entry.score}
                                 initial={{ scale: 1.2 }}
@@ -436,7 +436,7 @@ export default function LiveLeaderboardPage() {
                               >
                                 {typeof entry.score === 'number' ? entry.score.toFixed(1) : entry.score}
                               </motion.span>
-                              <span className="text-sm ml-0.5" style={{ color: `${BRAND.white}40` }}>/10</span>
+                              <span className="text-xs xs:text-sm ml-0.5" style={{ color: `${BRAND.white}40` }}>/10</span>
                             </div>
                           </div>
 
@@ -531,29 +531,29 @@ export default function LiveLeaderboardPage() {
         </main>
 
         {/* Footer */}
-        <footer className="px-4 md:px-8 py-3 md:py-4">
+        <footer className="px-2 xs:px-4 md:px-8 py-2 xs:py-3 md:py-4">
           <div 
-            className="max-w-6xl mx-auto flex items-center justify-center py-3 px-4 rounded-xl"
+            className="max-w-6xl mx-auto flex items-center justify-center py-2 xs:py-3 px-2 xs:px-4 rounded-lg xs:rounded-xl"
             style={{ 
               background: `${BRAND.white}08`,
               backdropFilter: "blur(10px)",
               borderTop: `2px solid ${BRAND.indigo}`,
             }}
           >
-            <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-center">
-              <span className="text-[10px] md:text-xs" style={{ color: `${BRAND.white}50` }}>
+            <div className="flex items-center gap-1.5 xs:gap-2 md:gap-3 flex-wrap justify-center">
+              <span className="text-[9px] xs:text-[10px] md:text-xs" style={{ color: `${BRAND.white}50` }}>
                 Powered by
               </span>
-              <span className="text-[10px] md:text-xs font-semibold" style={{ color: BRAND.white }}>
+              <span className="text-[9px] xs:text-[10px] md:text-xs font-semibold" style={{ color: BRAND.white }}>
                 Accent Techno Solution Pvt Ltd.
               </span>
-              <span className="hidden sm:inline text-xs" style={{ color: `${BRAND.white}30` }}>•</span>
-              <span className="hidden sm:inline text-[10px] md:text-xs font-semibold" style={{ color: BRAND.white }}>
+              <span className="hidden sm:inline text-[10px] xs:text-xs" style={{ color: `${BRAND.white}30` }}>•</span>
+              <span className="hidden sm:inline text-[9px] xs:text-[10px] md:text-xs font-semibold" style={{ color: BRAND.white }}>
                 Suvidya Institute of Technology Pvt. Ltd.
               </span>
-              <span className="text-[10px] md:text-xs" style={{ color: `${BRAND.white}30` }}>•</span>
+              <span className="text-[9px] xs:text-[10px] md:text-xs" style={{ color: `${BRAND.white}30` }}>•</span>
               <span
-                className="text-[10px] md:text-xs font-black tracking-wider"
+                className="text-[9px] xs:text-[10px] md:text-xs font-black tracking-wider"
                 style={{ color: BRAND.yellow }}
               >
                 GENESIS

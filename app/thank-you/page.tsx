@@ -127,7 +127,7 @@ export default function ThankYouPage() {
 
   return (
     <div
-      className="h-screen flex flex-col items-center p-4 sm:p-6 overflow-hidden"
+      className="min-h-screen min-h-[568px] flex flex-col items-center p-3 xs:p-4 sm:p-6 overflow-hidden"
       style={{
         background: `linear-gradient(135deg, ${BRAND.indigo} 0%, #1a1d5c 50%, ${BRAND.indigo} 100%)`,
       }}
@@ -159,17 +159,17 @@ export default function ThankYouPage() {
         ))}
       </div>
 
-      <div className="relative z-10 w-full max-w-4xl mx-auto py-4 flex flex-col h-full overflow-hidden">
+      <div className="relative z-10 w-full max-w-4xl mx-auto py-2 xs:py-4 flex flex-col h-full overflow-hidden">
         {/* Header Section - Compact */}
         <motion.div
-          className="text-center mb-6"
+          className="text-center mb-3 xs:mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex items-center justify-center gap-4 mb-2">
+          <div className="flex items-center justify-center gap-2 xs:gap-4 mb-1 xs:mb-2">
             <motion.div
-              className="w-12 h-12 rounded-full flex items-center justify-center"
+              className="w-10 h-10 xs:w-12 xs:h-12 rounded-full flex items-center justify-center"
               style={{
                 background: `linear-gradient(135deg, ${BRAND.yellow}20, ${BRAND.yellow}10)`,
                 border: `2px solid ${BRAND.yellow}40`,
@@ -179,7 +179,7 @@ export default function ThankYouPage() {
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
             >
               <svg
-                className="w-6 h-6"
+                className="w-5 h-5 xs:w-6 xs:h-6"
                 style={{ color: BRAND.yellow }}
                 fill="none"
                 viewBox="0 0 24 24"
@@ -194,7 +194,7 @@ export default function ThankYouPage() {
               </svg>
             </motion.div>
             <h1
-              className="text-xl sm:text-2xl font-bold"
+              className="text-base xs:text-xl sm:text-2xl font-bold"
               style={{ color: BRAND.white }}
             >
             Thank you for building with GENESIS
@@ -205,7 +205,7 @@ export default function ThankYouPage() {
         {/* User Score Card - Compact inline */}
         {userScore && (
           <motion.div
-            className="mb-4 p-4 rounded-xl"
+            className="mb-3 xs:mb-4 p-3 xs:p-4 rounded-xl"
             style={{
               background: `linear-gradient(135deg, ${BRAND.blue}20, ${BRAND.indigo}40)`,
               border: `1px solid ${BRAND.blue}30`,
@@ -214,33 +214,33 @@ export default function ThankYouPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-3 xs:gap-6 flex-wrap">
                 <div>
-                  <p className="text-xs mb-1" style={{ color: `${BRAND.white}60` }}>
+                  <p className="text-[10px] xs:text-xs mb-0.5 xs:mb-1" style={{ color: `${BRAND.white}60` }}>
                     Your Score
                   </p>
-                  <p className="text-3xl font-bold" style={{ color: BRAND.yellow }}>
+                  <p className="text-xl xs:text-3xl font-bold" style={{ color: BRAND.yellow }}>
                     {userScore.bestScore}
-                    <span className="text-sm font-normal" style={{ color: `${BRAND.white}50` }}>
+                    <span className="text-[10px] xs:text-sm font-normal" style={{ color: `${BRAND.white}50` }}>
                       /100
                     </span>
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs mb-1" style={{ color: `${BRAND.white}60` }}>
+                  <p className="text-[10px] xs:text-xs mb-0.5 xs:mb-1" style={{ color: `${BRAND.white}60` }}>
                     Sector
                   </p>
-                  <p className="text-base font-semibold" style={{ color: BRAND.white }}>
+                  <p className="text-xs xs:text-base font-semibold" style={{ color: BRAND.white }}>
                     {SECTOR_NAMES[userScore.sector] || userScore.sector}
                   </p>
                 </div>
                 {userRank && (
                   <div>
-                    <p className="text-xs mb-1" style={{ color: `${BRAND.white}60` }}>
+                    <p className="text-[10px] xs:text-xs mb-0.5 xs:mb-1" style={{ color: `${BRAND.white}60` }}>
                       Rank
                     </p>
-                    <p className="text-xl font-bold" style={{ color: BRAND.yellow }}>
+                    <p className="text-base xs:text-xl font-bold" style={{ color: BRAND.yellow }}>
                       #{userRank}
                     </p>
                 </div>
@@ -248,7 +248,7 @@ export default function ThankYouPage() {
               </div>
               <button
                 onClick={() => router.push("/")}
-                className="px-6 py-2 rounded-lg font-semibold text-sm transition-all duration-300 hover:scale-105"
+                className="px-3 xs:px-6 py-1.5 xs:py-2 rounded-lg font-semibold text-xs xs:text-sm transition-all duration-300 hover:scale-105 flex-shrink-0"
                 style={{
                   background: BRAND.yellow,
                   color: BRAND.indigo,
@@ -262,7 +262,7 @@ export default function ThankYouPage() {
 
         {/* Leaderboard Section - Full height */}
         <motion.div
-          className="flex-1 rounded-2xl overflow-hidden flex flex-col"
+          className="flex-1 rounded-xl xs:rounded-2xl overflow-hidden flex flex-col"
           style={{
             background: `${BRAND.indigo}80`,
             border: `1px solid ${BRAND.blue}20`,
@@ -272,16 +272,16 @@ export default function ThankYouPage() {
           transition={{ delay: 0.4 }}
         >
           <div
-            className="px-6 py-3 flex items-center justify-between flex-shrink-0"
+            className="px-3 xs:px-6 py-2 xs:py-3 flex items-center justify-between flex-shrink-0"
             style={{
               background: `linear-gradient(90deg, ${BRAND.blue}30, ${BRAND.indigo}50)`,
               borderBottom: `1px solid ${BRAND.blue}20`,
             }}
           >
-            <h2 className="text-lg font-bold" style={{ color: BRAND.white }}>
+            <h2 className="text-sm xs:text-lg font-bold" style={{ color: BRAND.white }}>
               🏆 Leaderboard
             </h2>
-            <span className="text-xs px-3 py-1 rounded-full" style={{ background: `${BRAND.yellow}20`, color: BRAND.yellow }}>
+            <span className="text-[10px] xs:text-xs px-2 xs:px-3 py-0.5 xs:py-1 rounded-full" style={{ background: `${BRAND.yellow}20`, color: BRAND.yellow }}>
               Top 10
             </span>
           </div>
@@ -303,16 +303,16 @@ export default function ThankYouPage() {
               <table className="w-full">
                 <thead className="sticky top-0" style={{ background: `${BRAND.indigo}` }}>
                   <tr style={{ background: `${BRAND.indigo}95` }}>
-                    <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: `${BRAND.white}60` }}>
+                    <th className="px-2 xs:px-4 py-1.5 xs:py-2 text-left text-[10px] xs:text-xs font-semibold uppercase tracking-wider" style={{ color: `${BRAND.white}60` }}>
                       Rank
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: `${BRAND.white}60` }}>
+                    <th className="px-2 xs:px-4 py-1.5 xs:py-2 text-left text-[10px] xs:text-xs font-semibold uppercase tracking-wider" style={{ color: `${BRAND.white}60` }}>
                       Name
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style={{ color: `${BRAND.white}60` }}>
+                    <th className="px-2 xs:px-4 py-1.5 xs:py-2 text-left text-[10px] xs:text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style={{ color: `${BRAND.white}60` }}>
                       Sector
                     </th>
-                    <th className="px-4 py-2 text-right text-xs font-semibold uppercase tracking-wider" style={{ color: `${BRAND.white}60` }}>
+                    <th className="px-2 xs:px-4 py-1.5 xs:py-2 text-right text-[10px] xs:text-xs font-semibold uppercase tracking-wider" style={{ color: `${BRAND.white}60` }}>
                       Score
                     </th>
                   </tr>
@@ -336,27 +336,27 @@ export default function ThankYouPage() {
                         transition={{ delay: 0.5 + index * 0.05 }}
                         whileHover={{ background: `${BRAND.blue}15` }}
                       >
-                        <td className="px-4 py-2">
+                        <td className="px-2 xs:px-4 py-1.5 xs:py-2">
                           <span
-                            className="font-bold text-base"
+                            className="font-bold text-sm xs:text-base"
                             style={{ color: isTopThree ? BRAND.yellow : BRAND.white }}
                           >
                             {rankEmoji || `#${entry.rank}`}
                           </span>
                         </td>
-                        <td className="px-4 py-2">
+                        <td className="px-2 xs:px-4 py-1.5 xs:py-2">
                           <div>
-                            <p className="font-medium text-sm" style={{ color: BRAND.white }}>
+                            <p className="font-medium text-xs xs:text-sm" style={{ color: BRAND.white }}>
                               {entry.name}
                             </p>
-                            <p className="text-xs" style={{ color: `${BRAND.white}40` }}>
+                            <p className="text-[10px] xs:text-xs" style={{ color: `${BRAND.white}40` }}>
                               {entry.phone}
                             </p>
                           </div>
                         </td>
-                        <td className="px-4 py-2 hidden sm:table-cell">
+                        <td className="px-2 xs:px-4 py-1.5 xs:py-2 hidden sm:table-cell">
                           <span
-                            className="text-xs px-2 py-1 rounded-full"
+                            className="text-[10px] xs:text-xs px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-full"
                             style={{
                               background: `${BRAND.blue}20`,
                               color: `${BRAND.white}80`,
@@ -365,9 +365,9 @@ export default function ThankYouPage() {
                             {SECTOR_NAMES[entry.sector] || entry.sector}
                           </span>
                         </td>
-                        <td className="px-4 py-2 text-right">
+                        <td className="px-2 xs:px-4 py-1.5 xs:py-2 text-right">
                           <span
-                            className="font-bold text-lg"
+                            className="font-bold text-base xs:text-lg"
                             style={{ color: isTopThree ? BRAND.yellow : BRAND.white }}
                           >
                             {entry.score}
@@ -389,7 +389,7 @@ export default function ThankYouPage() {
           
           {/* Powered by footer inside leaderboard card */}
           <div
-            className="px-4 py-3 flex flex-wrap items-center justify-center gap-1 text-xs flex-shrink-0"
+            className="px-2 xs:px-4 py-2 xs:py-3 flex flex-wrap items-center justify-center gap-1 text-[9px] xs:text-xs flex-shrink-0"
             style={{
               borderTop: `1px solid ${BRAND.blue}20`,
               color: `${BRAND.white}40`,
