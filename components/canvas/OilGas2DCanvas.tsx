@@ -1285,13 +1285,13 @@ export function OilGas2DCanvas({
             boxShadow: `0 -10px 50px rgba(0,0,0,0.5)`,
           }}
         >
-          <div className="px-2 py-2">
+          <div className="px-4 py-5">
             {/* Single line: Label + Components in a row */}
-            <div className="flex items-center gap-2">
-              <p className="text-[10px] font-bold flex-shrink-0" style={{ color: COLORS.yellow }}>
+            <div className="flex items-center gap-4">
+              <p className="text-base font-bold flex-shrink-0" style={{ color: COLORS.yellow }}>
                 🛠️
               </p>
-              <div className="flex items-center gap-1.5 flex-1 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              <div className="flex items-center gap-4 flex-1 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 {shuffledComponents.map((comp) => {
                   const isPlaced = placedComponents.some((p) => p.componentId === comp.id);
                   return (
@@ -1300,30 +1300,30 @@ export function OilGas2DCanvas({
                       draggable={!isPlaced && !isComplete}
                       onDragStart={() => handleDragStart(comp.id)}
                       whileTap={{ scale: isPlaced ? 1 : 0.9 }}
-                      className={`relative flex-shrink-0 flex flex-col items-center p-1 rounded-lg transition-all ${
+                      className={`relative flex-shrink-0 flex flex-col items-center p-2.5 rounded-2xl transition-all ${
                         isPlaced ? 'opacity-40' : 'cursor-grab active:cursor-grabbing'
                       }`}
                       style={{ 
-                        background: isPlaced ? `${COLORS.white}05` : `${COLORS.white}10`,
-                        border: `1px solid ${isPlaced ? `${COLORS.white}10` : `${COLORS.yellow}30`}`,
+                        background: isPlaced ? `${COLORS.white}05` : `${COLORS.white}12`,
+                        border: `2px solid ${isPlaced ? `${COLORS.white}15` : `${COLORS.yellow}50`}`,
                       }}
                     >
                       <div 
-                        className="w-9 h-9 rounded-md flex items-center justify-center"
+                        className="w-16 h-16 rounded-xl flex items-center justify-center"
                         style={{ 
                           background: isPlaced ? `${COLORS.white}10` : COLORS.blue,
                         }}
                       >
                         {isPlaced ? (
-                          <svg className="w-4 h-4" fill={COLORS.yellow} viewBox="0 0 24 24">
+                          <svg className="w-7 h-7" fill={COLORS.yellow} viewBox="0 0 24 24">
                             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                           </svg>
                         ) : (
-                          <ComponentIcon componentId={comp.id} size={22} />
+                          <ComponentIcon componentId={comp.id} size={36} />
                         )}
                       </div>
                       <span 
-                        className="text-[7px] font-medium text-center leading-tight mt-0.5 w-10 truncate"
+                        className="text-xs font-bold text-center leading-tight mt-2 w-16"
                         style={{ color: isPlaced ? `${COLORS.white}40` : COLORS.white }}
                       >
                         {comp.name.split(' ')[0]}
@@ -1332,7 +1332,7 @@ export function OilGas2DCanvas({
                   );
                 })}
               </div>
-              <p className="text-[10px] font-bold flex-shrink-0 px-1.5 py-0.5 rounded" style={{ color: COLORS.yellow, background: `${COLORS.yellow}20` }}>
+              <p className="text-base font-bold flex-shrink-0 px-4 py-2 rounded-xl" style={{ color: COLORS.yellow, background: `${COLORS.yellow}20` }}>
                 {placedComponents.length}/{CORRECT_SEQUENCE.length}
               </p>
             </div>

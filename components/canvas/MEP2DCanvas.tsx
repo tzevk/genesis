@@ -1256,10 +1256,10 @@ export function MEP2DCanvas({
         <motion.div 
           initial={{ y: 100 }}
           animate={{ y: 0 }}
-          className="md:hidden fixed bottom-0 left-0 right-0 z-30 px-2 py-2"
+          className="md:hidden fixed bottom-0 left-0 right-0 z-30 px-4 py-5"
           style={{ background: COLORS.glass, backdropFilter: 'blur(20px)', borderTop: `1px solid ${COLORS.emerald}40` }}
         >
-          <div className="flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex items-center gap-4 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {shuffledComponents.map(comp => {
               const isPlaced = placedComponents.some(p => p.componentId === comp.id);
               const typeColor = getTypeColor(comp.type);
@@ -1268,19 +1268,19 @@ export function MEP2DCanvas({
                   key={comp.id}
                   draggable={!isPlaced && gameStep === 1}
                   onDragStart={() => handleDragStart(comp.id)}
-                  className={`flex-shrink-0 p-1.5 rounded-lg flex flex-col items-center ${isPlaced ? 'opacity-40' : ''}`}
-                  style={{ background: COLORS.glass, border: `1px solid ${isPlaced ? typeColor : COLORS.glassBorder}`, minWidth: 70 }}
+                  className={`flex-shrink-0 p-2.5 rounded-2xl flex flex-col items-center ${isPlaced ? 'opacity-40' : ''}`}
+                  style={{ background: COLORS.glass, border: `2px solid ${isPlaced ? typeColor : COLORS.glassBorder}`, minWidth: 90 }}
                 >
-                  <div className="w-9 h-9 rounded flex items-center justify-center" style={{ background: `${typeColor}15` }}>
+                  <div className="w-16 h-16 rounded-xl flex items-center justify-center" style={{ background: `${typeColor}20` }}>
                     {isPlaced ? (
-                      <svg className="w-4 h-4" fill="none" stroke={typeColor} strokeWidth="2.5" viewBox="0 0 24 24">
+                      <svg className="w-7 h-7" fill="none" stroke={typeColor} strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
-                      <ComponentIcon componentId={comp.id} size={28} />
+                      <ComponentIcon componentId={comp.id} size={36} />
                     )}
                   </div>
-                  <span className="text-[8px] mt-1 text-center leading-tight" style={{ color: `${COLORS.coolWhite}70` }}>
+                  <span className="text-xs font-bold mt-2 text-center leading-tight" style={{ color: `${COLORS.coolWhite}90` }}>
                     {comp.name.split(' ').slice(0, 2).join(' ')}
                   </span>
                 </motion.div>
