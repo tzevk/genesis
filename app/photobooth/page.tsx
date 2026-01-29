@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ThankYouPhotobooth } from "@/components/login/ThankYouPhotobooth";
 import { getUserDataAsync } from "@/lib/utils";
 
 export default function PhotoboothPage() {
+  const searchParams = useSearchParams();
+  const nextRedirect = searchParams.get("next") || "/sector-wheel";
   const [userData, setUserData] = useState<{ name: string; educationLevel?: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -66,6 +69,7 @@ export default function PhotoboothPage() {
     <ThankYouPhotobooth
       userName={userData?.name || "Guest"}
       educationLevel={userData?.educationLevel}
+      nextRedirect={nextRedirect}
     />
   );
 }

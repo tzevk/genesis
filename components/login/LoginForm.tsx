@@ -75,6 +75,8 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showPhotoConsentModal, setShowPhotoConsentModal] = useState(false);
+  const [pendingRedirect, setPendingRedirect] = useState<string | null>(null);
 
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -166,19 +168,14 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
         businessCardBack: useBusinessCard ? businessCardBack : undefined,
       });
       
-      // For students: redirect based on education level (photobooth comes after quiz/simulation)
+      // For students: show photo consent modal first
       // For professionals: show success modal
       if (userType === "student") {
-        setIsFadingOut(true);
-        setTimeout(() => {
-          // If education level is "Others", redirect to industry quiz
-          // Otherwise go to sector wheel for simulation
-          if (formData.educationLevel === "Others") {
-            router.replace("/industry-quiz-instructions");
-          } else {
-            router.replace("/sector-wheel");
-          }
-        }, 1200);
+        setIsLoading(false);
+        // All students go to sector-wheel after photobooth
+        setPendingRedirect("/sector-wheel");
+        // Show photo consent modal
+        setShowPhotoConsentModal(true);
       } else {
         // Professional - show success modal
         setIsLoading(false);
@@ -239,8 +236,174 @@ export function LoginForm({ onStartSimulation }: LoginFormProps) {
     }
   };
 
+  // Handle photo consent agreement
+  const handlePhotoConsentAgree = () => {
+    setShowPhotoConsentModal(false);
+    setIsFadingOut(true);
+    setTimeout(() => {
+      // Redirect to photobooth first, which will then redirect to the quiz/simulation
+      router.replace(`/photobooth?next=${encodeURIComponent(pendingRedirect || "/sector-wheel")}`);
+    }, 800);
+  };
+
+  // Handle photo consent decline
+  const handlePhotoConsentDecline = () => {
+    setShowPhotoConsentModal(false);
+    setIsFadingOut(true);
+    setTimeout(() => {
+      // Skip photobooth and go directly to quiz/simulation
+      router.replace(pendingRedirect || "/sector-wheel");
+    }, 800);
+  };
+
   return (
     <>
+      {/* Photo Consent Modal for Students */}
+      <AnimatePresence>
+        {showPhotoConsentModal && (
+          <motion.div
+            className="fixed inset-0 z-[300] flex items-center justify-center p-4"
+            style={{ background: "rgba(0, 0, 0, 0.85)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="w-full max-w-md rounded-2xl p-6 text-center relative overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, #2E3093 0%, #1a1d5c 100%)",
+                border: "1px solid rgba(250, 228, 82, 0.3)",
+                boxShadow: "0 25px 50px rgba(0, 0, 0, 0.5)",
+              }}
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 20 }}
+            >
+              {/* Camera Icon */}
+              <motion.div
+                className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(135deg, #FAE452 0%, #f5d93a 100%)",
+                  boxShadow: "0 10px 40px rgba(250, 228, 82, 0.4)",
+                }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              >
+                <svg
+                  className="w-8 h-8"
+                  style={{ color: "#2E3093" }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </motion.div>
+
+              {/* Title */}
+              <motion.h2
+                className="text-xl font-bold mb-3"
+                style={{ color: "#FAE452" }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                Photo Consent
+              </motion.h2>
+
+              {/* Terms & Conditions */}
+              <motion.div
+                className="text-left mb-4 p-4 rounded-xl max-h-48 overflow-y-auto"
+                style={{ 
+                  background: "rgba(255, 255, 255, 0.05)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <p className="text-sm mb-3" style={{ color: "rgba(255, 255, 255, 0.9)" }}>
+                  By clicking &quot;I Agree&quot;, you consent to:
+                </p>
+                <ul className="text-xs space-y-2" style={{ color: "rgba(255, 255, 255, 0.7)" }}>
+                  <li className="flex items-start gap-2">
+                    <span style={{ color: "#FAE452" }}>•</span>
+                    Having your photo taken at the GENESIS photobooth
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span style={{ color: "#FAE452" }}>•</span>
+                    Your photo being displayed on the ChemTECH 2026 photo wall
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span style={{ color: "#FAE452" }}>•</span>
+                    Potential use of your photo for event promotion and social media
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span style={{ color: "#FAE452" }}>•</span>
+                    Storage of your photo for the duration of the event
+                  </li>
+                </ul>
+              </motion.div>
+
+              {/* Note */}
+              <motion.p
+                className="text-xs mb-5"
+                style={{ color: "rgba(255, 255, 255, 0.5)" }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                You can skip the photobooth if you prefer not to participate.
+              </motion.p>
+
+              {/* Buttons */}
+              <motion.div
+                className="flex gap-3"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <button
+                  onClick={handlePhotoConsentDecline}
+                  className="flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.1)",
+                    color: "rgba(255, 255, 255, 0.8)",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                  }}
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={handlePhotoConsentAgree}
+                  className="flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
+                  style={{
+                    background: "linear-gradient(135deg, #FAE452 0%, #f5d93a 100%)",
+                    color: "#2E3093",
+                    boxShadow: "0 4px 20px rgba(250, 228, 82, 0.3)",
+                  }}
+                >
+                  I Agree
+                </button>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Success Modal for Professionals */}
       <AnimatePresence>
         {showSuccessModal && (

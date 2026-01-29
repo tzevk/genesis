@@ -234,8 +234,13 @@ export default function SectorWheelPage() {
     
     setIsSubmitting(true);
     await updateUserSector(selectedSector);
-    // Use replace to prevent back navigation
-    router.replace("/canvas");
+    
+    // Redirect to quiz for Industry Quiz sector, otherwise go to canvas
+    if (selectedSector === "Industry Quiz") {
+      router.replace("/industry-quiz-instructions");
+    } else {
+      router.replace("/canvas");
+    }
   }, [selectedSector, isSubmitting, router]);
 
   // Get sector icon component
@@ -275,6 +280,14 @@ export default function SectorWheelPage() {
             <rect x="3" y="3" width="18" height="18" rx="2"/>
             <path d="M3 9h18M9 3v18M15 9v12" strokeLinecap="round"/>
             <circle cx="6" cy="6" r="1.5" fill="currentColor"/>
+          </svg>
+        );
+      case "quiz":
+        return (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9 9a3 3 0 1 1 3.5 2.96c-.47.18-.97.54-.97 1.04v1" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="12" cy="17" r="0.5" fill="currentColor"/>
           </svg>
         );
       default:

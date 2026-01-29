@@ -137,6 +137,12 @@ export const SECTORS: Sector[] = [
     icon: "mep",
     description: "mechanical, electrical, and plumbing systems",
   },
+  {
+    name: "Industry Quiz",
+    color: "#00A86B",
+    icon: "quiz",
+    description: "test your industry knowledge",
+  },
 ];
 
 // Brand color palette

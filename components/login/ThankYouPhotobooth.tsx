@@ -14,6 +14,7 @@ const BRAND = {
 interface ThankYouPhotoboothProps {
   userName: string;
   educationLevel?: string;
+  nextRedirect?: string;
 }
 
 // Pre-generate confetti positions
@@ -25,7 +26,7 @@ const CONFETTI = Array.from({ length: 30 }, (_, i) => ({
   color: i % 3 === 0 ? BRAND.yellow : i % 3 === 1 ? BRAND.blue : BRAND.white,
 }));
 
-export function ThankYouPhotobooth({ userName, educationLevel }: ThankYouPhotoboothProps) {
+export function ThankYouPhotobooth({ userName, educationLevel, nextRedirect = "/sector-wheel" }: ThankYouPhotoboothProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -515,23 +516,41 @@ export function ThankYouPhotobooth({ userName, educationLevel }: ThankYouPhotobo
               </svg>
               Download Photo
             </motion.button>
-            <motion.button
-              className="w-full py-2.5 xs:py-3 rounded-xl font-medium text-xs xs:text-sm flex items-center justify-center gap-2"
-              style={{
-                background: `${BRAND.white}10`,
-                color: BRAND.white,
-                border: `1px solid ${BRAND.white}20`,
-              }}
-              onClick={retakePhoto}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M1 4v6h6" />
-                <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
-              </svg>
-              Retake Photo
-            </motion.button>
+            <div className="flex gap-2">
+              <motion.button
+                className="flex-1 py-2.5 xs:py-3 rounded-xl font-medium text-xs xs:text-sm flex items-center justify-center gap-2"
+                style={{
+                  background: `${BRAND.white}10`,
+                  color: BRAND.white,
+                  border: `1px solid ${BRAND.white}20`,
+                }}
+                onClick={retakePhoto}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M1 4v6h6" />
+                  <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
+                </svg>
+                Retake
+              </motion.button>
+              <motion.button
+                className="flex-1 py-2.5 xs:py-3 rounded-xl font-bold text-xs xs:text-sm flex items-center justify-center gap-2"
+                style={{
+                  background: BRAND.indigo,
+                  color: BRAND.white,
+                  border: `1px solid ${BRAND.yellow}40`,
+                }}
+                onClick={() => window.location.href = nextRedirect}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Continue
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </motion.button>
+            </div>
           </>
         )}
       </motion.div>
