@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -136,6 +137,11 @@ export async function POST(request: NextRequest) {
         ...studentData,
         sector: null,
         createdAt: new Date(),
+      });
+
+      // Send welcome email with PDFs (don't await to avoid blocking response)
+      sendWelcomeEmail(name.trim(), email.trim()).catch((err) => {
+        console.error("Failed to send welcome email:", err);
       });
 
       return NextResponse.json({
