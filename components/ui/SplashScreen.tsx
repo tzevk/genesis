@@ -305,7 +305,7 @@ export function SplashScreen() {
 
   {/* LOGOS CONTAINER */}
   <motion.div
-    className="relative px-3 py-2 rounded-lg"
+    className="relative px-2 py-1.5 rounded-lg"
     style={{
       background: "rgba(255, 255, 255, 0.1)",
       backdropFilter: "blur(20px)",
@@ -316,7 +316,7 @@ export function SplashScreen() {
     animate={{ scale: 1, opacity: 1 }}
     transition={{ duration: 1.2, delay: 1.4 }}
   >
-    <div className="flex flex-col xs:flex-row items-center justify-center gap-3 md:gap-4">
+    <div className="flex flex-col xs:flex-row items-center justify-center gap-2 md:gap-3">
 
 {/* ACCENT Logo Wrapper with Luminance Plate */}
 <div className="relative">
@@ -330,7 +330,7 @@ export function SplashScreen() {
     alt="Accent Techno Solutions"
     className="
       relative
-      w-[150px] xs:w-[175px] md:w-[240px]
+      w-[110px] xs:w-[130px] md:w-[180px]
       contrast-[1.35] brightness-[1.15]
       drop-shadow-[0_0_14px_rgba(255,255,255,0.45)]
     "
@@ -343,7 +343,7 @@ export function SplashScreen() {
 
     {/* Divider */}
     <motion.span
-      className="text-white/50 text-4xl md:text-5xl font-light select-none"
+      className="text-white/50 text-3xl md:text-4xl font-light select-none"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 1.6, duration: 0.6 }}
@@ -364,7 +364,7 @@ export function SplashScreen() {
     className="
       relative
       w-auto
-      h-[88px] xs:h-[102px] md:h-[138px]
+      h-[65px] xs:h-[75px] md:h-[100px]
       contrast-[1.38] brightness-[1.16]
       drop-shadow-[0_0_22px_rgba(255,255,255,0.50)]
       object-contain
@@ -412,7 +412,7 @@ export function SplashScreen() {
               </motion.div>
               <motion.p
                 className="text-[10px] xs:text-xs tracking-widest"
-                style={{ color: "rgba(255, 255, 255, 0.4)" }}
+                style={{ color: "rgba(255, 255, 255, 0.93)" }}
                 animate={{ opacity: [0.3, 0.6, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
