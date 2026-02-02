@@ -54,14 +54,14 @@ const generateConfetti = (count: number) =>
     shape: Math.random() > 0.5 ? 'circle' : 'square',
   }));
 
-// Floating stars component
-function FloatingStars() {
+// Floating sparkles component with SVG
+function FloatingSparkles() {
   return (
     <>
       {[...Array(8)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute text-2xl"
+          className="absolute"
           style={{
             left: `${10 + (i * 12)}%`,
             top: `${20 + (i % 3) * 25}%`,
@@ -77,7 +77,9 @@ function FloatingStars() {
             delay: i * 0.2,
           }}
         >
-          ✨
+          <svg width="20" height="20" viewBox="0 0 24 24" fill={BRAND.yellow}>
+            <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z" />
+          </svg>
         </motion.div>
       ))}
     </>
@@ -176,8 +178,8 @@ export default function QuizCompletePage() {
         ))}
       </AnimatePresence>
 
-      {/* Floating stars */}
-      {scholarship.eligible && <FloatingStars />}
+      {/* Floating sparkles */}
+      {scholarship.eligible && <FloatingSparkles />}
 
       <AnimatePresence>
         {showContent && (
@@ -187,7 +189,7 @@ export default function QuizCompletePage() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
           >
-            {/* Trophy/Celebration Icon with glow */}
+            {/* Trophy/Success Icon with glow */}
             <motion.div
               className="relative inline-block mb-6"
               initial={{ scale: 0, rotate: -180 }}
@@ -200,9 +202,17 @@ export default function QuizCompletePage() {
                 animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.6, 0.4] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
-              <span className="text-7xl xs:text-8xl relative block">
-                {scholarship.eligible ? "🏆" : scoreOutOf10 >= 5 ? "🎉" : "✅"}
-              </span>
+              <div className="relative w-20 h-20 xs:w-24 xs:h-24 flex items-center justify-center">
+                {scholarship.eligible ? (
+                  <svg viewBox="0 0 24 24" fill={BRAND.yellow} className="w-16 h-16 xs:w-20 xs:h-20">
+                    <path d="M5 3h14c.55 0 1 .45 1 1v2c0 2.55-1.92 4.63-4.39 4.94.63 1.01 1.04 2.17 1.14 3.42l.23 2.28c.05.5.04 1.01-.02 1.51l-.22 1.85h-9.5l-.22-1.85c-.06-.5-.07-1.01-.02-1.51l.23-2.28c.1-1.25.51-2.41 1.14-3.42C6.92 10.63 5 8.55 5 6V4c0-.55.45-1 1-1h-1zm2 2v1c0 1.1.9 2 2 2h.39c.44-1.23 1.21-2.3 2.21-3H7zm10 0h-3.6c1 .7 1.77 1.77 2.21 3H16c1.1 0 2-.9 2-2V5h-1zM8 22h8v-1H8v1z"/>
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill={BRAND.yellow} className="w-16 h-16 xs:w-20 xs:h-20">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                )}
+              </div>
             </motion.div>
 
             {/* Thank You Message */}
@@ -226,7 +236,7 @@ export default function QuizCompletePage() {
               Thank you for taking the Industry Literacy Assessment
             </motion.p>
 
-            {/* Score Display with animated ring */}
+            {/* Score Display */}
             <motion.div
               className="relative p-6 xs:p-8 rounded-3xl mb-6"
               style={{
@@ -238,25 +248,6 @@ export default function QuizCompletePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              {/* Score ring animation */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                <motion.circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  fill="none"
-                  stroke={BRAND.yellow}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeDasharray={`${scoreOutOf10 * 28.3} 283`}
-                  initial={{ strokeDasharray: "0 283" }}
-                  animate={{ strokeDasharray: `${scoreOutOf10 * 28.3} 283` }}
-                  transition={{ delay: 0.8, duration: 1.5, ease: "easeOut" }}
-                  style={{ transform: "rotate(-90deg)", transformOrigin: "center" }}
-                  opacity={0.3}
-                />
-              </svg>
-              
               <p className="text-xs xs:text-sm uppercase tracking-widest mb-3" style={{ color: `${BRAND.white}60` }}>
                 Your Score
               </p>
@@ -312,20 +303,22 @@ export default function QuizCompletePage() {
                 />
                 
                 <motion.div
-                  className="text-4xl xs:text-5xl mb-3"
+                  className="mb-3 flex justify-center"
                   animate={{ 
-                    rotate: [0, -15, 15, -15, 0],
+                    rotate: [0, -10, 10, -10, 0],
                     scale: [1, 1.1, 1],
                   }}
                   transition={{ duration: 1, delay: 1.3 }}
                 >
-                  🎓
+                  <svg viewBox="0 0 24 24" fill={BRAND.yellow} className="w-12 h-12 xs:w-14 xs:h-14">
+                    <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/>
+                  </svg>
                 </motion.div>
                 <h3 
                   className="text-lg xs:text-xl font-bold mb-2"
                   style={{ color: BRAND.yellow }}
                 >
-                  🎊 Congratulations! 🎊
+                  Congratulations!
                 </h3>
                 <p 
                   className="text-3xl xs:text-4xl font-bold mb-2"
@@ -358,15 +351,14 @@ export default function QuizCompletePage() {
               <motion.button
                 className="w-full py-3.5 xs:py-4 rounded-xl font-semibold text-sm xs:text-base transition-all"
                 style={{
-                  background: `linear-gradient(135deg, ${BRAND.yellow}, ${BRAND.orange || '#F59E0B'})`,
+                  background: BRAND.yellow,
                   color: BRAND.dark,
-                  boxShadow: `0 4px 20px ${BRAND.yellow}40`,
                 }}
                 onClick={() => router.push("/insights")}
-                whileHover={{ scale: 1.02, boxShadow: `0 6px 25px ${BRAND.yellow}50` }}
+                whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                View Detailed Insights →
+                View Detailed Insights
               </motion.button>
 
               <motion.button

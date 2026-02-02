@@ -350,16 +350,17 @@ export default function ThankYouPage() {
             />
             
             <div className="relative z-10 flex items-center justify-center gap-4 flex-wrap">
-              <motion.span 
-                className="text-3xl xs:text-4xl"
+              <motion.div
                 animate={{ rotate: [0, -10, 10, -10, 0], scale: [1, 1.1, 1] }}
                 transition={{ duration: 1, delay: 0.7 }}
               >
-                🎓
-              </motion.span>
+                <svg viewBox="0 0 24 24" fill={BRAND.yellow} className="w-10 h-10 xs:w-12 xs:h-12">
+                  <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/>
+                </svg>
+              </motion.div>
               <div>
                 <p className="text-sm xs:text-base font-bold" style={{ color: BRAND.yellow }}>
-                  🎊 Congratulations! 🎊
+                  Congratulations!
                 </p>
                 <p className="text-xl xs:text-2xl font-bold" style={{ color: BRAND.white }}>
                   {getScholarshipDiscount(Math.round(userScore.bestScore / 10)).percentage}% Scholarship
@@ -390,8 +391,11 @@ export default function ThankYouPage() {
               borderBottom: `1px solid ${BRAND.blue}20`,
             }}
           >
-            <h2 className="text-sm xs:text-lg font-bold" style={{ color: BRAND.white }}>
-              🏆 Leaderboard
+            <h2 className="text-sm xs:text-lg font-bold flex items-center gap-2" style={{ color: BRAND.white }}>
+              <svg viewBox="0 0 24 24" fill={BRAND.yellow} className="w-5 h-5 xs:w-6 xs:h-6">
+                <path d="M5 3h14c.55 0 1 .45 1 1v2c0 2.55-1.92 4.63-4.39 4.94.63 1.01 1.04 2.17 1.14 3.42l.23 2.28c.05.5.04 1.01-.02 1.51l-.22 1.85h-9.5l-.22-1.85c-.06-.5-.07-1.01-.02-1.51l.23-2.28c.1-1.25.51-2.41 1.14-3.42C6.92 10.63 5 8.55 5 6V4c0-.55.45-1 1-1h-1zm2 2v1c0 1.1.9 2 2 2h.39c.44-1.23 1.21-2.3 2.21-3H7zm10 0h-3.6c1 .7 1.77 1.77 2.21 3H16c1.1 0 2-.9 2-2V5h-1zM8 22h8v-1H8v1z"/>
+              </svg>
+              Leaderboard
             </h2>
             <span className="text-[10px] xs:text-xs px-2 xs:px-3 py-0.5 xs:py-1 rounded-full" style={{ background: `${BRAND.yellow}20`, color: BRAND.yellow }}>
               Top 10
@@ -433,7 +437,6 @@ export default function ThankYouPage() {
                   {leaderboard.map((entry, index) => {
                     const isCurrentUser = userScore && entry.phone.endsWith(userScore.name.slice(-4));
                     const isTopThree = entry.rank <= 3;
-                    const rankEmoji = entry.rank === 1 ? "🥇" : entry.rank === 2 ? "🥈" : entry.rank === 3 ? "🥉" : "";
                     
                     return (
                       <motion.tr
@@ -453,7 +456,7 @@ export default function ThankYouPage() {
                             className="font-bold text-sm xs:text-base"
                             style={{ color: isTopThree ? BRAND.yellow : BRAND.white }}
                           >
-                            {rankEmoji || `#${entry.rank}`}
+                            #{entry.rank}
                           </span>
                         </td>
                         <td className="px-2 xs:px-4 py-1.5 xs:py-2">
@@ -532,7 +535,7 @@ export default function ThankYouPage() {
             <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
             <circle cx="12" cy="13" r="4" />
           </svg>
-          Take a Photo 📸
+          Take a Photo
         </motion.button>
       </div>
     </div>

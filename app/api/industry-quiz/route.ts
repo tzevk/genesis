@@ -671,34 +671,39 @@ export async function GET() {
     const db = client.db("genesis");
     
     // Try to get all questions from MongoDB
-    let allQuestions = await db
+    let allQuestions: Array<{
+      question: string;
+      options: string[];
+      correct: number;
+      category: string;
+      explanation: string;
+    }> = [];
+    
+    const dbQuestions = await db
       .collection("industry_quiz_questions")
       .find({})
       .toArray();
     
-    // If no questions in DB, use defaults and try to seed the collection
-    if (allQuestions.length === 0) {
-      // Seed the database with default questions
-      try {
-        await db.collection("industry_quiz_questions").insertMany(DEFAULT_QUESTIONS);
-        allQuestions = DEFAULT_QUESTIONS.map((q, i) => ({ ...q, _id: i.toString() }));
-      } catch {
-        // Collection might already exist, use defaults directly
-        allQuestions = DEFAULT_QUESTIONS.map((q, i) => ({ ...q, _id: i.toString() }));
-      }
-    }
-    
-    // Use diverse selection to ensure questions from different categories
-    const selectedQuestions = selectDiverseQuestions(
-      allQuestions.map(q => ({
+    if (dbQuestions.length > 0) {
+      allQuestions = dbQuestions.map(q => ({
         question: q.question,
         options: q.options,
         correct: q.correct,
         category: q.category,
         explanation: q.explanation,
-      })),
-      5
-    );
+      }));
+    } else {
+      // Seed the database with default questions
+      try {
+        await db.collection("industry_quiz_questions").insertMany(DEFAULT_QUESTIONS);
+      } catch {
+        // Collection might already exist, ignore error
+      }
+      allQuestions = DEFAULT_QUESTIONS;
+    }
+    
+    // Use diverse selection to ensure questions from different categories
+    const selectedQuestions = selectDiverseQuestions(allQuestions, 5);
     
     // Shuffle options for each selected question
     const finalQuestions = selectedQuestions.map((q, idx) => {
