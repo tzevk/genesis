@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
-import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -132,21 +131,13 @@ export async function POST(request: NextRequest) {
         lastLogin: new Date(),
       };
 
-      // Create new student
+      // Create new student with emailSent: false (will be sent by local endpoint)
       const result = await users.insertOne({
         ...studentData,
         sector: null,
+        emailSent: false,
         createdAt: new Date(),
       });
-
-      // Send welcome email - must await on Vercel to prevent function termination
-      try {
-        await sendWelcomeEmail(name.trim(), email.trim());
-        console.log("Welcome email sent successfully to:", email.trim());
-      } catch (err) {
-        console.error("Failed to send welcome email:", err);
-        // Don't fail the signup if email fails
-      }
 
       return NextResponse.json({
         success: true,

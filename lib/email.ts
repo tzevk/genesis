@@ -73,12 +73,6 @@ export async function sendWelcomeEmail(userName: string, userEmail: string) {
               <!-- Header with gradient -->
               <tr>
                 <td style="background: linear-gradient(135deg, #2E3093 0%, #2A6BB5 100%); padding: 40px 30px; text-align: center;">
-                  <h1 style="margin: 0; color: #FAE452; font-size: 28px; font-weight: 700; letter-spacing: 1px;">
-                    GENESIS
-                  </h1>
-                  <p style="margin: 8px 0 0 0; color: #FFFFFF; font-size: 14px; opacity: 0.9;">
-                    An Interactive Experience
-                  </p>
                 </td>
               </tr>
               
@@ -152,9 +146,6 @@ export async function sendWelcomeEmail(userName: string, userEmail: string) {
                   <p style="margin: 0; color: #2A6BB5; font-size: 14px; font-weight: 500;">
                     Suvidya Institute of Technology
                   </p>
-                  <p style="margin: 0; color: #2A6BB5; font-size: 14px; font-weight: 500;">
-                    Accent Techno Solutions
-                  </p>
                 </td>
               </tr>
               
@@ -185,7 +176,7 @@ export async function sendWelcomeEmail(userName: string, userEmail: string) {
   const textBody = `
 Dear ${userName},
 
-Thank you for registering for Genesis – An Interactive Experience, jointly presented by Suvidya Institute of Technology and Accent Techno Solutions. We trust that the session was informative and provided meaningful insights into industry-driven practices and emerging perspectives.
+Thank you for registering for Genesis – An Interactive Experience, presented by Suvidya Institute of Technology and Accent Techno Solutions. We trust that the session was informative and provided meaningful insights into industry-driven practices and emerging perspectives.
 
 Download our Industrial Training Programme details here:
 ${PDF_FILES.map((file) => `- ${baseUrl}/${encodeURIComponent(file)}`).join("\n")}
@@ -196,7 +187,6 @@ We appreciate your participation and look forward to future engagement.
 
 Best regards,
 Suvidya Institute of Technology
-Accent Techno Solutions
   `;
 
   try {
