@@ -1,14 +1,14 @@
 import nodemailer from "nodemailer";
-import path from "path";
-import fs from "fs";
 
 // Create reusable transporter - supports both Gmail and custom SMTP
 function createTransporter() {
   const user = process.env.EMAIL_USER;
   const pass = process.env.EMAIL_APP_PASSWORD;
-  
+
   if (!user || !pass) {
-    console.error("Email credentials not configured. Set EMAIL_USER and EMAIL_APP_PASSWORD in .env.local");
+    console.error(
+      "Email credentials not configured. Set EMAIL_USER and EMAIL_APP_PASSWORD"
+    );
     return null;
   }
 
@@ -18,7 +18,7 @@ function createTransporter() {
     return nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: parseInt(process.env.EMAIL_PORT || "587"),
-      secure: process.env.EMAIL_SECURE === "true", // true for 465, false for other ports
+      secure: process.env.EMAIL_SECURE === "true",
       auth: { user, pass },
     });
   } else {
@@ -30,36 +30,32 @@ function createTransporter() {
   }
 }
 
-// Get all PDF files from public folder
-function getPDFAttachments() {
-  try {
-    // On Vercel, we need to use the correct path
-    const publicDir = path.join(process.cwd(), "public");
-    
-    // Check if directory exists
-    if (!fs.existsSync(publicDir)) {
-      console.error("Public directory not found:", publicDir);
-      return [];
-    }
-    
-    const files = fs.readdirSync(publicDir);
-    const pdfFiles = files.filter((file) => file.toLowerCase().endsWith(".pdf"));
-    
-    console.log(`Found ${pdfFiles.length} PDF files to attach`);
-    
-    return pdfFiles.map((file) => ({
-      filename: file,
-      path: path.join(publicDir, file),
-    }));
-  } catch (error) {
-    console.error("Error reading PDF attachments:", error);
-    return [];
-  }
-}
+// PDF files list - these will be linked via URL
+const PDF_FILES = [
+  "EDD Batch-no. 27.pdf",
+  "Electrical System Design 69weekend.pdf",
+  "MEP(Mechanical, Electrical, Plumbling)-weekend31.pdf",
+  "Mechanical Design of Process Equipment - Full Time80.pdf",
+  "Pdd 37 new.pdf",
+  "Piping Engineering  FULLTIME65.pdf",
+  "Process Engineering full time 88.pdf",
+  "Process Instrumentation & Control - Fulltime64.pdf",
+  "Structural Engineering 67 - Full Time.pdf",
+];
 
 // Send welcome email to registered students
 export async function sendWelcomeEmail(userName: string, userEmail: string) {
-  const subject = "Thank You for Registering – Genesis: An Interactive Experience";
+  const subject =
+    "Thank You for Registering – Genesis: An Interactive Experience";
+
+  // Get base URL from environment or use default
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://genesis-app.vercel.app";
+
+  // Generate PDF download links
+  const pdfLinksHtml = PDF_FILES.map(
+    (file) =>
+      `<li style="margin: 8px 0;"><a href="${baseUrl}/${encodeURIComponent(file)}" style="color: #2A6BB5; text-decoration: none; font-weight: 500;">📄 ${file.replace(".pdf", "")}</a></li>`
+  ).join("");
 
   const htmlBody = `
     <!DOCTYPE html>
@@ -77,6 +73,12 @@ export async function sendWelcomeEmail(userName: string, userEmail: string) {
               <!-- Header with gradient -->
               <tr>
                 <td style="background: linear-gradient(135deg, #2E3093 0%, #2A6BB5 100%); padding: 40px 30px; text-align: center;">
+                  <h1 style="margin: 0; color: #FAE452; font-size: 28px; font-weight: 700; letter-spacing: 1px;">
+                    GENESIS
+                  </h1>
+                  <p style="margin: 8px 0 0 0; color: #FFFFFF; font-size: 14px; opacity: 0.9;">
+                    An Interactive Experience
+                  </p>
                 </td>
               </tr>
               
@@ -100,16 +102,29 @@ export async function sendWelcomeEmail(userName: string, userEmail: string) {
                     We trust that the session was informative and provided meaningful insights into industry-driven practices and emerging perspectives.
                   </p>
                   
-                  <!-- Highlight box -->
+                  <!-- Highlight box with download links -->
                   <table width="100%" cellpadding="0" cellspacing="0" style="margin: 25px 0;">
                     <tr>
                       <td style="background: linear-gradient(135deg, #2E3093 0%, #2A6BB5 100%); border-radius: 12px; padding: 25px;">
-                        <p style="margin: 0; color: #FFFFFF; font-size: 15px; line-height: 1.7;">
-                          📎 <strong style="color: #FAE452;">Attached:</strong> Details of our Industrial Training Programmes for your reference. These programmes are carefully structured to bridge academic learning with practical industry exposure.
+                        <p style="margin: 0 0 15px 0; color: #FFFFFF; font-size: 15px; line-height: 1.7;">
+                          📎 <strong style="color: #FAE452;">Industrial Training Programmes:</strong>
+                        </p>
+                        <p style="margin: 0; color: #FFFFFF; font-size: 14px; line-height: 1.6;">
+                          These programmes are carefully structured to bridge academic learning with practical industry exposure.
                         </p>
                       </td>
                     </tr>
                   </table>
+                  
+                  <!-- PDF Download Links -->
+                  <div style="background-color: #f8f9fa; border-radius: 10px; padding: 20px; margin: 20px 0;">
+                    <p style="margin: 0 0 12px 0; color: #2E3093; font-size: 15px; font-weight: 600;">
+                      📥 Download Programme Details:
+                    </p>
+                    <ul style="margin: 0; padding-left: 20px; list-style: none;">
+                      ${pdfLinksHtml}
+                    </ul>
+                  </div>
                   
                   <p style="margin: 0 0 18px 0; color: #333333; font-size: 15px; line-height: 1.7;">
                     Should you require any additional information or wish to discuss the programmes in greater detail, please do not hesitate to contact us. We will be glad to assist you.
@@ -137,13 +152,16 @@ export async function sendWelcomeEmail(userName: string, userEmail: string) {
                   <p style="margin: 0; color: #2A6BB5; font-size: 14px; font-weight: 500;">
                     Suvidya Institute of Technology
                   </p>
+                  <p style="margin: 0; color: #2A6BB5; font-size: 14px; font-weight: 500;">
+                    Accent Techno Solutions
+                  </p>
                 </td>
               </tr>
               
               <!-- Footer Banner Image -->
               <tr>
                 <td style="padding: 0;">
-                  <img src="cid:footerBanner" alt="Suvidya & Accent - Training Programmes" style="width: 100%; height: auto; display: block;" />
+                  <img src="${baseUrl}/unnamed.jpg" alt="Suvidya & Accent - Training Programmes" style="width: 100%; height: auto; display: block;" />
                 </td>
               </tr>
               
@@ -167,9 +185,10 @@ export async function sendWelcomeEmail(userName: string, userEmail: string) {
   const textBody = `
 Dear ${userName},
 
-Thank you for registering for Genesis – An Interactive Experience, jointly presented by Suvidya Institute of Technology. We trust that the session was informative and provided meaningful insights into industry-driven practices and emerging perspectives.
+Thank you for registering for Genesis – An Interactive Experience, jointly presented by Suvidya Institute of Technology and Accent Techno Solutions. We trust that the session was informative and provided meaningful insights into industry-driven practices and emerging perspectives.
 
-As a follow-up, please find the details of our Industrial Training Programmes attached for your reference. These programmes are carefully structured to bridge academic learning with practical industry exposure and are aligned with current professional and technological requirements.
+Download our Industrial Training Programme details here:
+${PDF_FILES.map((file) => `- ${baseUrl}/${encodeURIComponent(file)}`).join("\n")}
 
 Should you require any additional information or wish to discuss the programmes in greater detail, please do not hesitate to contact us. We will be glad to assist you.
 
@@ -177,39 +196,25 @@ We appreciate your participation and look forward to future engagement.
 
 Best regards,
 Suvidya Institute of Technology
+Accent Techno Solutions
   `;
 
   try {
     const transporter = createTransporter();
-    
+
     if (!transporter) {
       console.error("Email transporter not configured");
       return { success: false, error: "Email not configured" };
     }
 
-    const pdfAttachments = getPDFAttachments();
-    const publicDir = path.join(process.cwd(), "public");
-    
-    // Add footer banner as embedded attachment
-    const footerBannerPath = path.join(publicDir, "unnamed.jpg");
-    const attachments = [
-      ...pdfAttachments,
-      ...(fs.existsSync(footerBannerPath) ? [{
-        filename: "unnamed.jpg",
-        path: footerBannerPath,
-        cid: "footerBanner",
-      }] : []),
-    ];
-    
-    console.log(`Preparing to send email to ${userEmail} with ${pdfAttachments.length} PDF attachments`);
-    
+    console.log(`Preparing to send email to ${userEmail}`);
+
     const mailOptions = {
       from: `"Suvidya Institute of Technology" <${process.env.EMAIL_USER}>`,
       to: userEmail,
       subject: subject,
       text: textBody,
       html: htmlBody,
-      attachments: attachments,
     };
 
     const info = await transporter.sendMail(mailOptions);

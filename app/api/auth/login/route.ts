@@ -139,10 +139,14 @@ export async function POST(request: NextRequest) {
         createdAt: new Date(),
       });
 
-      // Send welcome email with PDFs (don't await to avoid blocking response)
-      sendWelcomeEmail(name.trim(), email.trim()).catch((err) => {
+      // Send welcome email - must await on Vercel to prevent function termination
+      try {
+        await sendWelcomeEmail(name.trim(), email.trim());
+        console.log("Welcome email sent successfully to:", email.trim());
+      } catch (err) {
         console.error("Failed to send welcome email:", err);
-      });
+        // Don't fail the signup if email fails
+      }
 
       return NextResponse.json({
         success: true,
