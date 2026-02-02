@@ -414,9 +414,17 @@ export default function SectorWheelPage() {
                   </svg>
                 </motion.div>
                 <motion.p
-                  className="text-xs tracking-widest"
-                  style={{ color: "rgba(250, 228, 82, 0.5)" }}
-                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  className="text-sm xs:text-base font-semibold tracking-widest px-6 py-2 rounded-full"
+                  style={{ 
+                    color: "#FAE452",
+                    background: "rgba(250, 228, 82, 0.15)",
+                    border: "1px solid rgba(250, 228, 82, 0.4)",
+                    textShadow: "0 0 10px rgba(250, 228, 82, 0.5)"
+                  }}
+                  animate={{ 
+                    opacity: [0.8, 1, 0.8],
+                    scale: [1, 1.02, 1]
+                  }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
                   Tap anywhere to continue

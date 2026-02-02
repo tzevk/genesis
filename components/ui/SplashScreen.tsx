@@ -411,9 +411,17 @@ export function SplashScreen() {
                 </svg>
               </motion.div>
               <motion.p
-                className="text-[10px] xs:text-xs tracking-widest"
-                style={{ color: "rgba(255, 255, 255, 0.93)" }}
-                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                className="text-sm xs:text-base font-semibold tracking-widest px-6 py-2 rounded-full"
+                style={{ 
+                  color: "#FFFFFF",
+                  background: "rgba(255, 255, 255, 0.15)",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  textShadow: "0 0 10px rgba(255, 255, 255, 0.5)"
+                }}
+                animate={{ 
+                  opacity: [0.7, 1, 0.7],
+                  scale: [1, 1.02, 1]
+                }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
                 Tap anywhere to continue
