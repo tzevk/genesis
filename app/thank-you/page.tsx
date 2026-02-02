@@ -326,8 +326,8 @@ export default function ThankYouPage() {
           </motion.div>
         )}
 
-        {/* Scholarship Award Section - Prominent */}
-        {userScore && Math.round(userScore.bestScore / 10) >= 7 && (
+        {/* Scholarship Award Section - Only shown for eligible users */}
+        {userScore && getScholarshipDiscount(Math.round(userScore.bestScore / 10)).eligible && (
           <motion.div
             className="mb-3 xs:mb-4 p-4 xs:p-5 rounded-xl text-center relative overflow-hidden"
             style={{
