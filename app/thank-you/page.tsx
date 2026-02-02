@@ -50,6 +50,29 @@ const PARTICLES = [
   { width: 2, height: 2, left: 30, top: 10, duration: 4.8, delay: 0.1 },
 ];
 
+// Confetti colors for celebration
+const CONFETTI_COLORS = [
+  BRAND.yellow, 
+  BRAND.blue, 
+  "#EC4899", // pink
+  "#22C55E", // green
+  "#F97316", // orange
+  BRAND.white,
+  "#A855F7", // purple
+];
+
+// Generate confetti particles
+const generateConfetti = () => 
+  Array.from({ length: 40 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    delay: Math.random() * 2,
+    duration: 3 + Math.random() * 3,
+    color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+    size: 4 + Math.random() * 6,
+    shape: Math.random() > 0.5 ? 'circle' : 'square',
+  }));
+
 // Sector display names
 const SECTOR_NAMES: Record<string, string> = {
   process: "Process",
@@ -59,12 +82,21 @@ const SECTOR_NAMES: Record<string, string> = {
   mep: "MEP",
 };
 
+// Scholarship discount based on score (out of 10)
+function getScholarshipDiscount(scoreOutOf10: number): { percentage: number; eligible: boolean } {
+  if (scoreOutOf10 >= 9) return { percentage: 5, eligible: true };
+  if (scoreOutOf10 >= 8) return { percentage: 3, eligible: true };
+  if (scoreOutOf10 >= 7) return { percentage: 2, eligible: true };
+  return { percentage: 0, eligible: false };
+}
+
 export default function ThankYouPage() {
   const router = useRouter();
   const [userScore, setUserScore] = useState<UserScore | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState<number | null>(null);
+  const [confetti, setConfetti] = useState<ReturnType<typeof generateConfetti>>([]);
 
   // Prevent going back to previous page
   useEffect(() => {
@@ -94,6 +126,12 @@ export default function ThankYouPage() {
             lastScore: userData.lastScore || 0,
             sector: userData.sector || "",
           });
+          
+          // Generate confetti if scholarship eligible
+          const scoreOutOf10 = Math.round((userData.bestScore || 0) / 10);
+          if (scoreOutOf10 >= 7) {
+            setConfetti(generateConfetti());
+          }
         }
 
         // Fetch leaderboard
@@ -127,11 +165,39 @@ export default function ThankYouPage() {
 
   return (
     <div
-      className="min-h-screen min-h-[568px] flex flex-col items-center p-3 xs:p-4 sm:p-6 overflow-hidden"
+      className="min-h-screen min-h-[568px] flex flex-col items-center p-3 xs:p-4 sm:p-6 overflow-hidden relative"
       style={{
         background: `linear-gradient(135deg, ${BRAND.indigo} 0%, #1a1d5c 50%, ${BRAND.indigo} 100%)`,
       }}
     >
+      {/* Confetti rain for scholarship eligible users */}
+      {confetti.map((c) => (
+        <motion.div
+          key={c.id}
+          className={c.shape === 'circle' ? 'rounded-full' : 'rounded-sm'}
+          style={{ 
+            position: 'absolute',
+            background: c.color,
+            width: c.size,
+            height: c.size,
+            left: `${c.x}%`,
+            top: -20,
+            zIndex: 50,
+          }}
+          animate={{
+            y: ["0vh", "110vh"],
+            rotate: [0, 720],
+            opacity: [1, 1, 0],
+          }}
+          transition={{
+            duration: c.duration,
+            delay: c.delay,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+      ))}
+
       {/* Animated background particles */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {PARTICLES.map((particle, i) => (
@@ -214,16 +280,16 @@ export default function ThankYouPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-3 xs:gap-6 flex-wrap">
                 <div>
                   <p className="text-[10px] xs:text-xs mb-0.5 xs:mb-1" style={{ color: `${BRAND.white}60` }}>
                     Your Score
                   </p>
                   <p className="text-xl xs:text-3xl font-bold" style={{ color: BRAND.yellow }}>
-                    {userScore.bestScore}
+                    {Math.round(userScore.bestScore / 10)}
                     <span className="text-[10px] xs:text-sm font-normal" style={{ color: `${BRAND.white}50` }}>
-                      /100
+                      /10
                     </span>
                   </p>
                 </div>
@@ -256,6 +322,52 @@ export default function ThankYouPage() {
               >
                 Home
               </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Scholarship Award Section - Prominent */}
+        {userScore && Math.round(userScore.bestScore / 10) >= 7 && (
+          <motion.div
+            className="mb-3 xs:mb-4 p-4 xs:p-5 rounded-xl text-center relative overflow-hidden"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.yellow}25, ${BRAND.yellow}10)`,
+              border: `2px solid ${BRAND.yellow}50`,
+              boxShadow: `0 0 30px ${BRAND.yellow}20`,
+            }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, type: "spring" }}
+          >
+            {/* Sparkle effect */}
+            <motion.div
+              className="absolute inset-0"
+              style={{
+                background: `linear-gradient(45deg, transparent 30%, ${BRAND.white}15 50%, transparent 70%)`,
+              }}
+              animate={{ x: ["-100%", "200%"] }}
+              transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1 }}
+            />
+            
+            <div className="relative z-10 flex items-center justify-center gap-4 flex-wrap">
+              <motion.span 
+                className="text-3xl xs:text-4xl"
+                animate={{ rotate: [0, -10, 10, -10, 0], scale: [1, 1.1, 1] }}
+                transition={{ duration: 1, delay: 0.7 }}
+              >
+                🎓
+              </motion.span>
+              <div>
+                <p className="text-sm xs:text-base font-bold" style={{ color: BRAND.yellow }}>
+                  🎊 Congratulations! 🎊
+                </p>
+                <p className="text-xl xs:text-2xl font-bold" style={{ color: BRAND.white }}>
+                  {getScholarshipDiscount(Math.round(userScore.bestScore / 10)).percentage}% Scholarship
+                </p>
+                <p className="text-xs xs:text-sm" style={{ color: `${BRAND.white}80` }}>
+                  at <span style={{ color: BRAND.yellow }}>Suvidya Institute of Technology</span>
+                </p>
+              </div>
             </div>
           </motion.div>
         )}

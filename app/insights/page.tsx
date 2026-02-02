@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useQuiz } from "@/lib/quiz-context";
@@ -12,6 +12,14 @@ const BRAND = {
   white: "#FFFFFF",
   dark: "#1a1d2e",
 };
+
+// Scholarship discount based on score (out of 10)
+function getScholarshipDiscount(scoreOutOf10: number): { percentage: number; eligible: boolean } {
+  if (scoreOutOf10 >= 9) return { percentage: 5, eligible: true };
+  if (scoreOutOf10 >= 8) return { percentage: 3, eligible: true };
+  if (scoreOutOf10 >= 7) return { percentage: 2, eligible: true };
+  return { percentage: 0, eligible: false };
+}
 
 // Radar chart component using SVG
 function RadarChart({ 
@@ -259,18 +267,18 @@ function MinimalBackground() {
 export default function InsightsPage() {
   const router = useRouter();
   const { insights, answers } = useQuiz();
-  const [mounted, setMounted] = useState(false);
+  const mountedRef = React.useRef(false);
 
   useEffect(() => {
-    setMounted(true);
+    mountedRef.current = true;
     
-    // If no insights, redirect to quiz
-    if (!insights && mounted) {
+    // If no insights after mount, redirect to quiz
+    if (!insights) {
       router.replace("/industry-quiz");
     }
-  }, [insights, mounted, router]);
+  }, [insights, router]);
 
-  if (!mounted || !insights) {
+  if (!insights) {
     return (
       <div className="min-h-screen min-h-[568px] flex items-center justify-center" style={{ background: BRAND.dark }}>
         <motion.div
@@ -436,7 +444,7 @@ export default function InsightsPage() {
 
         {/* Summary Stats */}
         <motion.div
-          className="flex items-center justify-center gap-6 xs:gap-8 mb-6 xs:mb-8 py-4"
+          className="flex items-center justify-center gap-4 xs:gap-6 mb-4 xs:mb-6 py-3 xs:py-4"
           style={{ borderTop: `1px solid ${BRAND.white}08` }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -444,76 +452,101 @@ export default function InsightsPage() {
         >
           <div className="text-center">
             <p 
-              className="text-2xl xs:text-3xl font-bold"
+              className="text-xl xs:text-2xl font-bold"
               style={{ color: BRAND.yellow }}
             >
               {answers.length}
             </p>
             <p 
-              className="text-[10px] xs:text-xs uppercase tracking-wider"
+              className="text-[9px] xs:text-[10px] uppercase tracking-wider"
               style={{ color: `${BRAND.white}50` }}
             >
               Questions
             </p>
           </div>
           <div 
-            className="w-px h-8"
+            className="w-px h-6 xs:h-8"
             style={{ background: `${BRAND.white}15` }}
           />
           <div className="text-center">
             <p 
-              className="text-2xl xs:text-3xl font-bold"
+              className="text-xl xs:text-2xl font-bold"
               style={{ color: BRAND.yellow }}
             >
               {answers.filter(a => a.isCorrect).length}
             </p>
             <p 
-              className="text-[10px] xs:text-xs uppercase tracking-wider"
+              className="text-[9px] xs:text-[10px] uppercase tracking-wider"
               style={{ color: `${BRAND.white}50` }}
             >
               Correct
             </p>
           </div>
           <div 
-            className="w-px h-8"
+            className="w-px h-6 xs:h-8"
             style={{ background: `${BRAND.white}15` }}
           />
           <div className="text-center">
             <p 
-              className="text-2xl xs:text-3xl font-bold"
+              className="text-xl xs:text-2xl font-bold"
               style={{ color: BRAND.yellow }}
             >
-              {insights.totalScore}%
+              {Math.round((answers.filter(a => a.isCorrect).length / answers.length) * 10)}
+              <span className="text-sm xs:text-base" style={{ color: `${BRAND.white}50` }}>/10</span>
             </p>
             <p 
-              className="text-[10px] xs:text-xs uppercase tracking-wider"
+              className="text-[9px] xs:text-[10px] uppercase tracking-wider"
               style={{ color: `${BRAND.white}50` }}
             >
-              Overall
+              Score
             </p>
           </div>
         </motion.div>
 
-        {/* Continue Button */}
-        <motion.div
-          className="mt-auto"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1 }}
-        >
-          <motion.button
-            className="w-full py-3 xs:py-4 rounded-xl font-medium text-sm xs:text-base"
-            style={{
-              background: BRAND.yellow,
-              color: BRAND.dark,
-            }}
-            onClick={() => router.push("/photobooth")}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-          >
-            Take a Photo →
-          </motion.button>
-        </motion.div>
+        {/* Scholarship Award Section */}
+        {(() => {
+          const scoreOutOf10 = Math.round((answers.filter(a => a.isCorrect).length / answers.length) * 10);
+          const scholarship = getScholarshipDiscount(scoreOutOf10);
+          return scholarship.eligible ? (
+            <motion.section
+              className="mb-4 xs:mb-6 p-4 xs:p-5 rounded-xl text-center"
+              style={{
+                background: `linear-gradient(135deg, ${BRAND.yellow}15, ${BRAND.yellow}05)`,
+                border: `2px solid ${BRAND.yellow}40`,
+              }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.95, type: "spring" }}
+            >
+              <motion.div
+                className="text-3xl xs:text-4xl mb-2"
+                animate={{ rotate: [0, -10, 10, -10, 0] }}
+                transition={{ duration: 0.5, delay: 1.2 }}
+              >
+                🎓
+              </motion.div>
+              <h3 
+                className="text-base xs:text-lg font-bold mb-1"
+                style={{ color: BRAND.yellow }}
+              >
+                Scholarship Earned!
+              </h3>
+              <p 
+                className="text-xl xs:text-2xl font-bold mb-1"
+                style={{ color: BRAND.white }}
+              >
+                {scholarship.percentage}% Discount
+              </p>
+              <p 
+                className="text-xs xs:text-sm"
+                style={{ color: `${BRAND.white}70` }}
+              >
+                at <span style={{ color: BRAND.yellow }}>Suvidya Institute of Technology</span>
+              </p>
+            </motion.section>
+          ) : null;
+        })()}
+
       </div>
     </div>
   );

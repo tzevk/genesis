@@ -215,16 +215,51 @@ export function SplashScreen() {
             onClick={handleEnterExperience}
           >
             <WaveBackground />
+<motion.div
+  className="relative z-20 flex flex-col items-center mt-6 md:mt-10 space-y-4"
+  initial={{ opacity: 0, y: -20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+>
 
-            {/* Center Content - GENESIS with Typing Animation */}
-            <motion.div 
-              className="relative z-10 text-center"
-              initial={{ opacity: 1 }}
-              animate={{ opacity: 1 }}
-            >
+  {/* Soft White Spotlight */}
+  <motion.div
+    className="absolute top-10 left-1/2 -translate-x-1/2 
+               w-[130%] h-24 rounded-full blur-[60px] 
+               bg-white/15 pointer-events-none"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 0.4 }}
+    transition={{ duration: 1.2, delay: 0.3 }}
+  />
+
+  {/* WHITE GLOW FIELD — Apple style */}
+  <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-[850px] h-[850px] pointer-events-none">
+    
+    {/* Outer White Halo */}
+    <motion.div
+      className="absolute inset-0 bg-white/10 blur-[200px] rounded-full"
+      animate={{ opacity: [0.2, 0.35, 0.2], scale: [1, 1.03, 1] }}
+      transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+    />
+
+    {/* Mid Soft Glow */}
+    <motion.div
+      className="absolute inset-0 bg-white/12 blur-[180px] rounded-full"
+      animate={{ opacity: [0.25, 0.45, 0.25], scale: [1, 1.05, 1] }}
+      transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+    />
+
+    {/* Inner Core Glow */}
+    <motion.div
+      className="absolute inset-0 bg-white/14 blur-[130px] rounded-full"
+      animate={{ opacity: [0.5, 0.75, 0.5], scale: [1, 1.07, 1] }}
+      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+    />
+  </div>
+
               {/* Typing GENESIS */}
               <h1 
-                className="text-4xl xs:text-5xl sm:text-6xl md:text-8xl tracking-tight"
+                className="text-5xl xs:text-6xl sm:text-7xl md:text-9xl tracking-tight"
                 style={{ 
                   color: "#FFFFFF",
                   fontWeight: 600,
@@ -237,7 +272,7 @@ export function SplashScreen() {
                     key={index}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.1, delay: 0.3 + index * 0.12 }}
+                    transition={{ duration: 0.1, delay: 0.5 + index * 0.12 }}
                   >
                     {letter}
                   </motion.span>
@@ -248,7 +283,7 @@ export function SplashScreen() {
                   animate={{ opacity: [1, 0, 1] }}
                   transition={{ 
                     duration: 1,
-                    delay: 0.3 + 7 * 0.12,
+                    delay: 0.5 + 7 * 0.12,
                     repeat: Infinity,
                     ease: "easeInOut"
                   }}
@@ -257,59 +292,93 @@ export function SplashScreen() {
                   .
                 </motion.span>
               </h1>
-              
-              {/* Partner Logos - Reveal after typing */}
-              <motion.div 
-                className="mt-6 xs:mt-8 sm:mt-12 flex flex-col items-center gap-3 xs:gap-4 px-4"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1.5 }}
-              >
-                <motion.p
-                  className="text-[10px] xs:text-xs uppercase tracking-[0.2em] xs:tracking-[0.3em]"
-                  style={{ color: "rgba(255, 255, 255, 0.5)" }}
-                >
-                  Presented by
-                </motion.p>
-                {/* Logos container - minimal padding, highlighted */}
-                <div 
-                  className="px-3 xs:px-4 sm:px-5 py-2 xs:py-2.5 sm:py-3 rounded-lg xs:rounded-xl flex items-center gap-3 xs:gap-4 sm:gap-5"
-                  style={{
-                    background: "#FFFFFF",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2), 0 0 40px rgba(250, 228, 82, 0.3)",
-                    border: "2px solid rgba(250, 228, 82, 0.4)",
-                  }}
-                >
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Image
-                      src="/ats.png"
-                      alt="Accent Techno Solutions"
-                      width={140}
-                      height={70}
-                      className="object-contain w-[80px] xs:w-[100px] sm:w-[140px] h-auto"
-                    />
-                  </motion.div>
-                  <div 
-                    className="w-px h-8 xs:h-10 sm:h-12" 
-                    style={{ background: "linear-gradient(180deg, transparent, rgba(46, 48, 147, 0.3), transparent)" }} 
-                  />
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Image
-                      src="/sit.png"
-                      alt="Suvidya Institute of Technology"
-                      width={140}
-                      height={70}
-                      className="object-contain w-[80px] xs:w-[100px] sm:w-[140px] h-auto"
-                    />
-                  </motion.div>
-                </div>
-              </motion.div>
+
+  {/* PRESENTED BY */}
+  <motion.p
+    className="text-xs md:text-sm uppercase tracking-[0.35em] text-white/60 mt-4"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ delay: 1.2, duration: 0.8 }}
+  >
+    PRESENTED BY
+  </motion.p>
+
+  {/* LOGOS CONTAINER */}
+  <motion.div
+    className="relative px-3 py-2 rounded-lg"
+    style={{
+      background: "rgba(255, 255, 255, 0.1)",
+      backdropFilter: "blur(20px)",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+    }}
+    initial={{ scale: 0.92, opacity: 0 }}
+    animate={{ scale: 1, opacity: 1 }}
+    transition={{ duration: 1.2, delay: 1.4 }}
+  >
+    <div className="flex flex-col xs:flex-row items-center justify-center gap-3 md:gap-4">
+
+{/* ACCENT Logo Wrapper with Luminance Plate */}
+<div className="relative">
+  
+  {/* White soft backlight for contrast */}
+  <div className="absolute inset-0 blur-[18px] bg-white/35 rounded-lg pointer-events-none"></div>
+
+  {/* ACCENT Logo */}
+  <motion.img
+    src="/ats.png"
+    alt="Accent Techno Solutions"
+    className="
+      relative
+      w-[150px] xs:w-[175px] md:w-[240px]
+      contrast-[1.35] brightness-[1.15]
+      drop-shadow-[0_0_14px_rgba(255,255,255,0.45)]
+    "
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8, delay: 1.5 }}
+  />
+
+</div>
+
+    {/* Divider */}
+    <motion.span
+      className="text-white/50 text-4xl md:text-5xl font-light select-none"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1.6, duration: 0.6 }}
+    >
+      ×
+    </motion.span>
+
+{/* SIT Logo Wrapper with Larger Height */}
+<div className="relative">
+
+  {/* Stronger white glow */}
+  <div className="absolute inset-0 blur-[26px] bg-white/40 rounded-lg pointer-events-none"></div>
+
+  {/* SIT Logo — significantly increased height */}
+  <motion.img
+    src="/sit.png"
+    alt="Suvidya Institute of Technology"
+    className="
+      relative
+      w-auto
+      h-[88px] xs:h-[102px] md:h-[138px]
+      contrast-[1.38] brightness-[1.16]
+      drop-shadow-[0_0_22px_rgba(255,255,255,0.50)]
+      object-contain
+    "
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8, delay: 1.7 }}
+  />
+
+</div>
+
+    </div>
+  </motion.div>
+
             </motion.div>
 
             {/* Subtle tap indicator */}
@@ -317,7 +386,7 @@ export function SplashScreen() {
               className="absolute bottom-6 xs:bottom-8 sm:bottom-12 flex flex-col items-center gap-1.5 xs:gap-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 2.2, duration: 0.6 }}
+              transition={{ delay: 1.8, duration: 0.6 }}
             >
               {/* Chevron up animation */}
               <motion.div
@@ -357,7 +426,7 @@ export function SplashScreen() {
         {phase === "login" && (
           <motion.div
             key="login"
-            className="fixed inset-0 flex items-center justify-center overflow-hidden p-4"
+            className="fixed inset-0 overflow-y-auto overflow-x-hidden"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
@@ -365,8 +434,14 @@ export function SplashScreen() {
           >
             <WaveBackground />
 
-            {/* Login Form */}
-            <div className="relative z-10 w-full max-w-md">
+            {/* Login Form - with safe area padding and scroll support */}
+            <div 
+              className="relative z-10 w-full min-h-screen flex items-center justify-center py-8 px-4"
+              style={{ 
+                paddingTop: "max(2rem, env(safe-area-inset-top))",
+                paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
+              }}
+            >
               <LoginForm onStartSimulation={handleStartSimulation} />
             </div>
           </motion.div>

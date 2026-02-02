@@ -6,6 +6,7 @@ const CATEGORIES = ["business", "sustainability", "supply_chain", "digital", "co
 
 // Default questions if MongoDB collection is empty
 const DEFAULT_QUESTIONS = [
+  // ============ SUSTAINABILITY QUESTIONS ============
   {
     question: "What does ESG stand for in corporate sustainability reporting?",
     options: [
@@ -17,78 +18,6 @@ const DEFAULT_QUESTIONS = [
     correct: 0,
     category: "sustainability",
     explanation: "ESG stands for Environmental, Social, and Governance—the three central pillars used to measure sustainability and ethical impact of investments and business practices."
-  },
-  {
-    question: "In supply chain management, what does 'Just-in-Time' (JIT) primarily aim to reduce?",
-    options: [
-      "Employee overtime",
-      "Inventory holding costs",
-      "Transportation distance",
-      "Product variety"
-    ],
-    correct: 1,
-    category: "supply_chain",
-    explanation: "Just-in-Time manufacturing aims to reduce inventory holding costs by receiving goods only as they are needed, minimizing storage and waste."
-  },
-  {
-    question: "What is the primary purpose of a Digital Twin in industrial operations?",
-    options: [
-      "Creating backup servers",
-      "Virtual simulation of physical assets",
-      "Duplicating employee access",
-      "Mirroring financial data"
-    ],
-    correct: 1,
-    category: "digital",
-    explanation: "A Digital Twin is a virtual replica of a physical asset, process, or system that allows for real-time monitoring, simulation, and optimization."
-  },
-  {
-    question: "Which financial metric measures a company's ability to pay short-term obligations?",
-    options: [
-      "Return on Investment (ROI)",
-      "Current Ratio",
-      "Gross Margin",
-      "EBITDA"
-    ],
-    correct: 1,
-    category: "finance",
-    explanation: "The Current Ratio (current assets / current liabilities) measures a company's ability to pay short-term obligations within one year."
-  },
-  {
-    question: "What does SCADA stand for in industrial automation?",
-    options: [
-      "System Control and Data Acquisition",
-      "Supervisory Control and Data Acquisition",
-      "Standard Computer Aided Design Application",
-      "Sequential Control and Digital Analysis"
-    ],
-    correct: 1,
-    category: "digital",
-    explanation: "SCADA (Supervisory Control and Data Acquisition) is a control system architecture used for high-level process supervisory management in industrial operations."
-  },
-  {
-    question: "In EPC projects, what does the acronym stand for?",
-    options: [
-      "Engineering, Planning, and Construction",
-      "Engineering, Procurement, and Construction",
-      "Execution, Planning, and Commissioning",
-      "Environmental Protection and Compliance"
-    ],
-    correct: 1,
-    category: "business",
-    explanation: "EPC stands for Engineering, Procurement, and Construction—a contracting model where a single contractor handles all phases of a project."
-  },
-  {
-    question: "What is the ISO 14001 standard primarily concerned with?",
-    options: [
-      "Quality Management",
-      "Information Security",
-      "Environmental Management",
-      "Occupational Health and Safety"
-    ],
-    correct: 2,
-    category: "compliance",
-    explanation: "ISO 14001 specifies requirements for an effective environmental management system (EMS) to help organizations reduce their environmental footprint."
   },
   {
     question: "What is 'Scope 3' emissions in carbon accounting?",
@@ -103,30 +32,6 @@ const DEFAULT_QUESTIONS = [
     explanation: "Scope 3 covers all indirect emissions in a company's value chain—both upstream (suppliers) and downstream (product use, disposal)."
   },
   {
-    question: "What does 'Industry 4.0' primarily refer to?",
-    options: [
-      "The fourth industrial revolution featuring cyber-physical systems",
-      "A quality certification for manufacturing",
-      "The fourth quarter financial planning cycle",
-      "A safety standard for industrial equipment"
-    ],
-    correct: 0,
-    category: "digital",
-    explanation: "Industry 4.0 refers to the fourth industrial revolution, characterized by smart factories, IoT, AI, and cyber-physical systems integration."
-  },
-  {
-    question: "In business strategy, what does CAPEX refer to?",
-    options: [
-      "Capital Expenditure",
-      "Capacity Expansion",
-      "Capital Export",
-      "Customer Acquisition Premium"
-    ],
-    correct: 0,
-    category: "finance",
-    explanation: "CAPEX (Capital Expenditure) refers to funds used to acquire, upgrade, or maintain physical assets like property, buildings, or equipment."
-  },
-  {
     question: "What is the primary goal of a 'Circular Economy' model?",
     options: [
       "Maximizing production speed",
@@ -139,28 +44,188 @@ const DEFAULT_QUESTIONS = [
     explanation: "A Circular Economy aims to eliminate waste by keeping products, materials, and resources in use as long as possible through reuse, repair, and recycling."
   },
   {
-    question: "What does SOC 2 compliance demonstrate about an organization?",
+    question: "What does 'Net Zero' commitment mean for a company?",
     options: [
-      "Financial audit readiness",
-      "Security, availability, and data privacy controls",
-      "Environmental sustainability practices",
-      "Employee safety standards"
+      "Zero profit margin",
+      "Balancing emissions produced with emissions removed",
+      "No net investment",
+      "Zero employee turnover"
     ],
     correct: 1,
-    category: "compliance",
-    explanation: "SOC 2 compliance demonstrates that an organization has implemented controls for security, availability, processing integrity, confidentiality, and privacy."
+    category: "sustainability",
+    explanation: "Net Zero means achieving a balance between greenhouse gas emissions produced and emissions removed from the atmosphere, typically through reduction and offsetting."
   },
   {
-    question: "In project management, what is a 'Critical Path'?",
+    question: "What is a carbon footprint?",
     options: [
-      "The most dangerous route in a facility",
-      "The longest sequence of dependent tasks determining project duration",
-      "The path requiring highest budget",
-      "The route for executive approvals"
+      "The physical space a company occupies",
+      "Total greenhouse gas emissions caused by an entity",
+      "The size of coal reserves",
+      "A measure of walking distance"
     ],
     correct: 1,
-    category: "business",
-    explanation: "The Critical Path is the longest sequence of dependent tasks that determines the minimum project duration—any delay on this path delays the entire project."
+    category: "sustainability",
+    explanation: "A carbon footprint is the total amount of greenhouse gases (including CO2 and methane) generated by human actions, measured in units of carbon dioxide equivalent."
+  },
+  {
+    question: "What does LEED certification evaluate?",
+    options: [
+      "Leadership development programs",
+      "Legal compliance standards",
+      "Green building design and performance",
+      "Employee engagement levels"
+    ],
+    correct: 2,
+    category: "sustainability",
+    explanation: "LEED (Leadership in Energy and Environmental Design) is a globally recognized green building certification system for the design, construction, and operation of high-performance buildings."
+  },
+  {
+    question: "What is 'greenwashing' in corporate communications?",
+    options: [
+      "Eco-friendly cleaning products",
+      "Misleading claims about environmental practices",
+      "Green energy washing technology",
+      "Sustainable laundry services"
+    ],
+    correct: 1,
+    category: "sustainability",
+    explanation: "Greenwashing refers to the practice of making misleading or unsubstantiated claims about the environmental benefits of a product, service, or company practices."
+  },
+  {
+    question: "What is the Science Based Targets initiative (SBTi)?",
+    options: [
+      "A government research program",
+      "A framework for setting emission reduction targets aligned with climate science",
+      "A scientific equipment certification",
+      "An academic research network"
+    ],
+    correct: 1,
+    category: "sustainability",
+    explanation: "SBTi helps companies set emission reduction targets in line with climate science and the Paris Agreement goals to limit global warming."
+  },
+
+  // ============ SUPPLY CHAIN QUESTIONS ============
+  {
+    question: "In supply chain management, what does 'Just-in-Time' (JIT) primarily aim to reduce?",
+    options: [
+      "Employee overtime",
+      "Inventory holding costs",
+      "Transportation distance",
+      "Product variety"
+    ],
+    correct: 1,
+    category: "supply_chain",
+    explanation: "Just-in-Time manufacturing aims to reduce inventory holding costs by receiving goods only as they are needed, minimizing storage and waste."
+  },
+  {
+    question: "What is the 'bullwhip effect' in supply chain management?",
+    options: [
+      "A quality control technique",
+      "Demand variability amplification up the supply chain",
+      "A fast shipping method",
+      "Employee motivation strategy"
+    ],
+    correct: 1,
+    category: "supply_chain",
+    explanation: "The bullwhip effect describes how small fluctuations in consumer demand can cause increasingly larger fluctuations in orders as they move up the supply chain."
+  },
+  {
+    question: "What does 'lead time' refer to in logistics?",
+    options: [
+      "Time spent in meetings",
+      "Duration from order placement to delivery",
+      "The first shift of the day",
+      "Management decision time"
+    ],
+    correct: 1,
+    category: "supply_chain",
+    explanation: "Lead time is the total time from when an order is placed until it is received, including processing, manufacturing, and shipping time."
+  },
+  {
+    question: "What is vendor-managed inventory (VMI)?",
+    options: [
+      "Inventory owned by the vendor on-site",
+      "Supplier taking responsibility for maintaining customer inventory levels",
+      "Vendor warehouse management",
+      "Manual inventory counting"
+    ],
+    correct: 1,
+    category: "supply_chain",
+    explanation: "VMI is a supply chain practice where the supplier is responsible for maintaining agreed inventory levels at the customer's location."
+  },
+  {
+    question: "What does 'nearshoring' mean in supply chain strategy?",
+    options: [
+      "Building facilities near water",
+      "Relocating operations to nearby countries",
+      "Coastal logistics networks",
+      "Beach-side manufacturing"
+    ],
+    correct: 1,
+    category: "supply_chain",
+    explanation: "Nearshoring involves moving business operations to nearby countries rather than distant offshore locations, reducing lead times and logistics complexity."
+  },
+  {
+    question: "What is a 3PL in logistics?",
+    options: [
+      "Third-Party Logistics provider",
+      "Three-Phase Loading system",
+      "Triple Performance Level",
+      "Third-Priority Lane"
+    ],
+    correct: 0,
+    category: "supply_chain",
+    explanation: "A Third-Party Logistics (3PL) provider offers outsourced logistics services including warehousing, transportation, and fulfillment operations."
+  },
+  {
+    question: "What is 'safety stock' in inventory management?",
+    options: [
+      "Hazardous materials storage",
+      "Extra inventory to prevent stockouts",
+      "Security equipment inventory",
+      "First aid supplies"
+    ],
+    correct: 1,
+    category: "supply_chain",
+    explanation: "Safety stock is additional inventory held to mitigate the risk of stockouts due to uncertainties in demand or supply."
+  },
+
+  // ============ DIGITAL QUESTIONS ============
+  {
+    question: "What is the primary purpose of a Digital Twin in industrial operations?",
+    options: [
+      "Creating backup servers",
+      "Virtual simulation of physical assets",
+      "Duplicating employee access",
+      "Mirroring financial data"
+    ],
+    correct: 1,
+    category: "digital",
+    explanation: "A Digital Twin is a virtual replica of a physical asset, process, or system that allows for real-time monitoring, simulation, and optimization."
+  },
+  {
+    question: "What does SCADA stand for in industrial automation?",
+    options: [
+      "System Control and Data Acquisition",
+      "Supervisory Control and Data Acquisition",
+      "Standard Computer Aided Design Application",
+      "Sequential Control and Digital Analysis"
+    ],
+    correct: 1,
+    category: "digital",
+    explanation: "SCADA (Supervisory Control and Data Acquisition) is a control system architecture used for high-level process supervisory management in industrial operations."
+  },
+  {
+    question: "What does 'Industry 4.0' primarily refer to?",
+    options: [
+      "The fourth industrial revolution featuring cyber-physical systems",
+      "A quality certification for manufacturing",
+      "The fourth quarter financial planning cycle",
+      "A safety standard for industrial equipment"
+    ],
+    correct: 0,
+    category: "digital",
+    explanation: "Industry 4.0 refers to the fourth industrial revolution, characterized by smart factories, IoT, AI, and cyber-physical systems integration."
   },
   {
     question: "What is the primary function of an ERP system?",
@@ -175,27 +240,416 @@ const DEFAULT_QUESTIONS = [
     explanation: "ERP (Enterprise Resource Planning) systems integrate core business processes—finance, HR, manufacturing, supply chain—into a single unified system."
   },
   {
-    question: "What does 'Net Zero' commitment mean for a company?",
+    question: "What does IoT stand for in industrial contexts?",
     options: [
-      "Zero profit margin",
-      "Balancing emissions produced with emissions removed",
-      "No net investment",
-      "Zero employee turnover"
+      "Internal Operations Technology",
+      "Internet of Things",
+      "Integrated Output Terminal",
+      "Industrial Optimization Technique"
     ],
     correct: 1,
-    category: "sustainability",
-    explanation: "Net Zero means achieving a balance between greenhouse gas emissions produced and emissions removed from the atmosphere, typically through reduction and offsetting."
+    category: "digital",
+    explanation: "IoT (Internet of Things) refers to interconnected devices and sensors that collect and exchange data, enabling smart industrial operations and monitoring."
+  },
+  {
+    question: "What is predictive maintenance?",
+    options: [
+      "Scheduled regular maintenance",
+      "Using data analytics to predict equipment failures",
+      "Maintenance after breakdown",
+      "Preventive safety checks"
+    ],
+    correct: 1,
+    category: "digital",
+    explanation: "Predictive maintenance uses data analysis, machine learning, and IoT sensors to predict when equipment will fail, allowing maintenance before breakdowns occur."
+  },
+  {
+    question: "What is edge computing in industrial applications?",
+    options: [
+      "Computing at the boundary of a building",
+      "Processing data near its source rather than in centralized data centers",
+      "Extreme performance computing",
+      "Border security systems"
+    ],
+    correct: 1,
+    category: "digital",
+    explanation: "Edge computing processes data near where it is generated (at the 'edge' of the network), reducing latency and bandwidth requirements for industrial IoT applications."
+  },
+  {
+    question: "What does API stand for in software integration?",
+    options: [
+      "Automated Programming Interface",
+      "Application Programming Interface",
+      "Advanced Protocol Integration",
+      "Analytical Processing Intelligence"
+    ],
+    correct: 1,
+    category: "digital",
+    explanation: "API (Application Programming Interface) is a set of protocols and tools that allows different software applications to communicate with each other."
+  },
+  {
+    question: "What is a data lake?",
+    options: [
+      "A water cooling system for servers",
+      "A centralized repository storing raw data at any scale",
+      "An underwater data center",
+      "A backup storage location"
+    ],
+    correct: 1,
+    category: "digital",
+    explanation: "A data lake is a centralized repository that stores all structured and unstructured data at any scale, allowing for various types of analytics and machine learning."
+  },
+
+  // ============ FINANCE QUESTIONS ============
+  {
+    question: "Which financial metric measures a company's ability to pay short-term obligations?",
+    options: [
+      "Return on Investment (ROI)",
+      "Current Ratio",
+      "Gross Margin",
+      "EBITDA"
+    ],
+    correct: 1,
+    category: "finance",
+    explanation: "The Current Ratio (current assets / current liabilities) measures a company's ability to pay short-term obligations within one year."
+  },
+  {
+    question: "In business strategy, what does CAPEX refer to?",
+    options: [
+      "Capital Expenditure",
+      "Capacity Expansion",
+      "Capital Export",
+      "Customer Acquisition Premium"
+    ],
+    correct: 0,
+    category: "finance",
+    explanation: "CAPEX (Capital Expenditure) refers to funds used to acquire, upgrade, or maintain physical assets like property, buildings, or equipment."
+  },
+  {
+    question: "What does OPEX stand for?",
+    options: [
+      "Operational Excellence",
+      "Operating Expenditure",
+      "Optimal Execution",
+      "Output Expansion"
+    ],
+    correct: 1,
+    category: "finance",
+    explanation: "OPEX (Operating Expenditure) refers to the ongoing costs for running a business, including rent, utilities, salaries, and maintenance."
+  },
+  {
+    question: "What is EBITDA used to measure?",
+    options: [
+      "Employee productivity",
+      "Operational profitability before certain expenses",
+      "Environmental impact",
+      "Equipment depreciation"
+    ],
+    correct: 1,
+    category: "finance",
+    explanation: "EBITDA (Earnings Before Interest, Taxes, Depreciation, and Amortization) measures a company's overall operational profitability."
+  },
+  {
+    question: "What is the difference between revenue and profit?",
+    options: [
+      "They are the same thing",
+      "Revenue is total income; profit is what remains after expenses",
+      "Profit is always higher than revenue",
+      "Revenue includes only product sales"
+    ],
+    correct: 1,
+    category: "finance",
+    explanation: "Revenue is the total income from sales before any deductions, while profit is what remains after subtracting all expenses, taxes, and costs."
+  },
+  {
+    question: "What does ROI stand for and measure?",
+    options: [
+      "Rate of Inflation - economic indicator",
+      "Return on Investment - profitability of investments",
+      "Risk of Implementation - project risk",
+      "Range of Improvement - performance metric"
+    ],
+    correct: 1,
+    category: "finance",
+    explanation: "ROI (Return on Investment) is a performance measure used to evaluate the profitability of an investment relative to its cost."
+  },
+  {
+    question: "What is working capital?",
+    options: [
+      "Money spent on office equipment",
+      "Current assets minus current liabilities",
+      "Total company value",
+      "Employee wages"
+    ],
+    correct: 1,
+    category: "finance",
+    explanation: "Working capital is the difference between current assets and current liabilities, representing the short-term liquidity available for daily operations."
+  },
+  {
+    question: "What is a balance sheet?",
+    options: [
+      "A tool for weighing materials",
+      "A financial statement showing assets, liabilities, and equity",
+      "An employee work schedule",
+      "A project timeline"
+    ],
+    correct: 1,
+    category: "finance",
+    explanation: "A balance sheet is a financial statement that reports a company's assets, liabilities, and shareholders' equity at a specific point in time."
+  },
+
+  // ============ BUSINESS QUESTIONS ============
+  {
+    question: "In EPC projects, what does the acronym stand for?",
+    options: [
+      "Engineering, Planning, and Construction",
+      "Engineering, Procurement, and Construction",
+      "Execution, Planning, and Commissioning",
+      "Environmental Protection and Compliance"
+    ],
+    correct: 1,
+    category: "business",
+    explanation: "EPC stands for Engineering, Procurement, and Construction—a contracting model where a single contractor handles all phases of a project."
+  },
+  {
+    question: "In project management, what is a 'Critical Path'?",
+    options: [
+      "The most dangerous route in a facility",
+      "The longest sequence of dependent tasks determining project duration",
+      "The path requiring highest budget",
+      "The route for executive approvals"
+    ],
+    correct: 1,
+    category: "business",
+    explanation: "The Critical Path is the longest sequence of dependent tasks that determines the minimum project duration—any delay on this path delays the entire project."
+  },
+  {
+    question: "What is a SWOT analysis used for?",
+    options: [
+      "Special Weapons and Tactics planning",
+      "Strategic planning by assessing Strengths, Weaknesses, Opportunities, and Threats",
+      "Software testing methodology",
+      "Supply chain optimization"
+    ],
+    correct: 1,
+    category: "business",
+    explanation: "SWOT analysis is a strategic planning tool that identifies internal Strengths and Weaknesses, and external Opportunities and Threats."
+  },
+  {
+    question: "What does KPI stand for in business performance?",
+    options: [
+      "Key Performance Indicator",
+      "Knowledge Processing Index",
+      "Known Problem Investigation",
+      "Kinetic Production Input"
+    ],
+    correct: 0,
+    category: "business",
+    explanation: "KPI (Key Performance Indicator) is a measurable value that demonstrates how effectively a company is achieving key business objectives."
+  },
+  {
+    question: "What is 'scope creep' in project management?",
+    options: [
+      "A type of software bug",
+      "Uncontrolled expansion of project requirements",
+      "Employee fatigue",
+      "Budget reduction"
+    ],
+    correct: 1,
+    category: "business",
+    explanation: "Scope creep refers to the uncontrolled expansion of project scope without adjustments to time, cost, and resources, often leading to project delays and budget overruns."
+  },
+  {
+    question: "What is a stakeholder in business context?",
+    options: [
+      "Someone who owns company shares only",
+      "Any party with an interest in the company's success",
+      "A person who holds meetings",
+      "A safety inspector"
+    ],
+    correct: 1,
+    category: "business",
+    explanation: "A stakeholder is any individual, group, or organization that can affect or be affected by a company's actions, including employees, customers, suppliers, and investors."
+  },
+  {
+    question: "What is the purpose of a feasibility study?",
+    options: [
+      "To study employee skills",
+      "To assess the viability of a proposed project or system",
+      "To analyze competitor products",
+      "To evaluate marketing campaigns"
+    ],
+    correct: 1,
+    category: "business",
+    explanation: "A feasibility study evaluates the practicality and viability of a proposed project by analyzing technical, economic, legal, operational, and scheduling factors."
+  },
+  {
+    question: "What is Six Sigma methodology focused on?",
+    options: [
+      "Marketing strategies",
+      "Reducing defects and improving quality",
+      "Employee hiring",
+      "Financial forecasting"
+    ],
+    correct: 1,
+    category: "business",
+    explanation: "Six Sigma is a set of techniques and tools for process improvement, focused on reducing variation and defects to improve quality and efficiency."
+  },
+
+  // ============ COMPLIANCE QUESTIONS ============
+  {
+    question: "What is the ISO 14001 standard primarily concerned with?",
+    options: [
+      "Quality Management",
+      "Information Security",
+      "Environmental Management",
+      "Occupational Health and Safety"
+    ],
+    correct: 2,
+    category: "compliance",
+    explanation: "ISO 14001 specifies requirements for an effective environmental management system (EMS) to help organizations reduce their environmental footprint."
+  },
+  {
+    question: "What does SOC 2 compliance demonstrate about an organization?",
+    options: [
+      "Financial audit readiness",
+      "Security, availability, and data privacy controls",
+      "Environmental sustainability practices",
+      "Employee safety standards"
+    ],
+    correct: 1,
+    category: "compliance",
+    explanation: "SOC 2 compliance demonstrates that an organization has implemented controls for security, availability, processing integrity, confidentiality, and privacy."
+  },
+  {
+    question: "What is ISO 9001 primarily about?",
+    options: [
+      "Environmental management",
+      "Quality management systems",
+      "Information security",
+      "Energy efficiency"
+    ],
+    correct: 1,
+    category: "compliance",
+    explanation: "ISO 9001 is the international standard for quality management systems (QMS), focused on meeting customer requirements and enhancing satisfaction."
+  },
+  {
+    question: "What does GDPR regulate?",
+    options: [
+      "Global trade tariffs",
+      "Data protection and privacy in the EU",
+      "Product safety standards",
+      "Digital payment systems"
+    ],
+    correct: 1,
+    category: "compliance",
+    explanation: "GDPR (General Data Protection Regulation) is an EU regulation on data protection and privacy, governing how organizations handle personal data."
+  },
+  {
+    question: "What is ISO 45001 focused on?",
+    options: [
+      "Quality management",
+      "Occupational health and safety",
+      "Environmental impact",
+      "Information security"
+    ],
+    correct: 1,
+    category: "compliance",
+    explanation: "ISO 45001 is the international standard for occupational health and safety management systems, aimed at reducing workplace risks and creating safer working conditions."
+  },
+  {
+    question: "What does a compliance audit assess?",
+    options: [
+      "Employee satisfaction levels",
+      "Adherence to laws, regulations, and internal policies",
+      "Marketing campaign effectiveness",
+      "Product design quality"
+    ],
+    correct: 1,
+    category: "compliance",
+    explanation: "A compliance audit evaluates whether an organization is following external laws, regulations, and internal policies and procedures."
+  },
+  {
+    question: "What is ISO 27001 concerned with?",
+    options: [
+      "Quality management",
+      "Information security management",
+      "Environmental protection",
+      "Food safety"
+    ],
+    correct: 1,
+    category: "compliance",
+    explanation: "ISO 27001 is the international standard for information security management systems (ISMS), providing a framework for protecting sensitive information."
+  },
+  {
+    question: "What is the purpose of an internal audit?",
+    options: [
+      "Tax preparation only",
+      "Independent evaluation of organizational processes and controls",
+      "Employee performance reviews",
+      "External reporting"
+    ],
+    correct: 1,
+    category: "compliance",
+    explanation: "An internal audit is an independent evaluation that assesses an organization's internal controls, governance, and processes to improve operations and risk management."
   }
 ];
 
-// Fisher-Yates shuffle algorithm
+// Fisher-Yates shuffle algorithm with seed support for better randomization
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    // Use crypto-quality randomness by combining multiple Math.random calls
+    const j = Math.floor((Math.random() + Math.random() * 0.0001) * (i + 1)) % (i + 1);
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
+}
+
+// Select questions ensuring category diversity
+function selectDiverseQuestions(questions: typeof DEFAULT_QUESTIONS, count: number): typeof DEFAULT_QUESTIONS {
+  // Group questions by category
+  const byCategory: Record<string, typeof DEFAULT_QUESTIONS> = {};
+  
+  for (const q of questions) {
+    if (!byCategory[q.category]) {
+      byCategory[q.category] = [];
+    }
+    byCategory[q.category].push(q);
+  }
+  
+  // Shuffle questions within each category
+  for (const category of Object.keys(byCategory)) {
+    byCategory[category] = shuffleArray(byCategory[category]);
+  }
+  
+  // Get available categories and shuffle them
+  const categories = shuffleArray(Object.keys(byCategory));
+  
+  const selected: typeof DEFAULT_QUESTIONS = [];
+  let categoryIndex = 0;
+  
+  // Round-robin selection from categories to ensure diversity
+  while (selected.length < count && categories.length > 0) {
+    const category = categories[categoryIndex % categories.length];
+    const categoryQuestions = byCategory[category];
+    
+    if (categoryQuestions && categoryQuestions.length > 0) {
+      // Take a random question from this category
+      const question = categoryQuestions.shift()!;
+      selected.push(question);
+    } else {
+      // Remove exhausted category
+      categories.splice(categoryIndex % categories.length, 1);
+      if (categories.length === 0) break;
+      continue; // Don't increment index since we removed an element
+    }
+    
+    categoryIndex++;
+  }
+  
+  // Final shuffle to mix up the category order in presentation
+  return shuffleArray(selected);
 }
 
 // Shuffle options while keeping track of correct answer
@@ -216,55 +670,59 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db("genesis");
     
-    // Try to get questions from MongoDB using $sample for random selection
-    let questions = await db
+    // Try to get all questions from MongoDB
+    let allQuestions = await db
       .collection("industry_quiz_questions")
-      .aggregate([{ $sample: { size: 5 } }])
+      .find({})
       .toArray();
     
     // If no questions in DB, use defaults and try to seed the collection
-    if (questions.length === 0) {
+    if (allQuestions.length === 0) {
       // Seed the database with default questions
       try {
         await db.collection("industry_quiz_questions").insertMany(DEFAULT_QUESTIONS);
+        allQuestions = DEFAULT_QUESTIONS.map((q, i) => ({ ...q, _id: i.toString() }));
       } catch {
-        // Collection might already exist, ignore
+        // Collection might already exist, use defaults directly
+        allQuestions = DEFAULT_QUESTIONS.map((q, i) => ({ ...q, _id: i.toString() }));
       }
-      
-      // Get 5 random from defaults
-      questions = shuffleArray(DEFAULT_QUESTIONS).slice(0, 5);
     }
     
-    // Shuffle questions and their options
-    const shuffledQuestions = shuffleArray(questions).map(q => {
-      const shuffled = shuffleOptions({
+    // Use diverse selection to ensure questions from different categories
+    const selectedQuestions = selectDiverseQuestions(
+      allQuestions.map(q => ({
         question: q.question,
         options: q.options,
         correct: q.correct,
         category: q.category,
         explanation: q.explanation,
-      });
+      })),
+      5
+    );
+    
+    // Shuffle options for each selected question
+    const finalQuestions = selectedQuestions.map((q, idx) => {
+      const shuffled = shuffleOptions(q);
       
       return {
-        _id: q._id?.toString() || Math.random().toString(36).substr(2, 9),
+        _id: Math.random().toString(36).substring(2, 11) + Date.now().toString(36),
         ...shuffled,
       };
     });
     
     return NextResponse.json({
       success: true,
-      questions: shuffledQuestions,
+      questions: finalQuestions,
     });
   } catch (error) {
     console.error("Failed to fetch industry quiz questions:", error);
     
-    // Fallback to default questions
-    const shuffledDefaults = shuffleArray(DEFAULT_QUESTIONS)
-      .slice(0, 5)
-      .map(q => ({
-        _id: Math.random().toString(36).substr(2, 9),
-        ...shuffleOptions(q),
-      }));
+    // Fallback to default questions with diverse selection
+    const selectedDefaults = selectDiverseQuestions(DEFAULT_QUESTIONS, 5);
+    const shuffledDefaults = selectedDefaults.map(q => ({
+      _id: Math.random().toString(36).substring(2, 11) + Date.now().toString(36),
+      ...shuffleOptions(q),
+    }));
     
     return NextResponse.json({
       success: true,

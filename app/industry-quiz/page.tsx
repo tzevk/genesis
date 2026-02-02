@@ -139,8 +139,8 @@ export default function IndustryQuizPage() {
         console.error("Failed to log results:", error);
       }
       
-      // Navigate to insights
-      router.push("/insights");
+      // Navigate to quiz complete page
+      router.push("/quiz-complete");
     } else {
       nextQuestion();
       setSelectedOption(null);
