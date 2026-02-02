@@ -42,9 +42,9 @@ export function ThankYouPhotobooth({ userName, educationLevel, nextRedirect = "/
   useEffect(() => {
     const initCamera = async () => {
       try {
-        // Use back camera on mobile devices
+        // Use front camera (selfie mode)
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" }, width: { ideal: 640 }, height: { ideal: 480 } },
+          video: { facingMode: { ideal: "user" }, width: { ideal: 640 }, height: { ideal: 480 } },
           audio: false,
         });
         
@@ -107,8 +107,11 @@ export function ThankYouPhotobooth({ userName, educationLevel, nextRedirect = "/
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     
-    // Draw video frame (no mirroring for back camera)
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Draw video frame (mirrored for front camera selfie)
+    ctx.save();
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+    ctx.restore();
 
     // Load logos
     const loadImage = (src: string): Promise<HTMLImageElement> => {
@@ -389,7 +392,7 @@ export function ThankYouPhotobooth({ userName, educationLevel, nextRedirect = "/
             playsInline
             muted
             className="absolute inset-0 w-full h-full object-cover"
-            style={{}} // Back camera - no mirror needed
+            style={{ transform: 'scaleX(-1)' }} // Front camera - mirror for natural selfie view
           />
         )}
 
