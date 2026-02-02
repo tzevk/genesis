@@ -364,31 +364,31 @@ export function HVAC2DCanvas({
     {
       id: "welcome",
       title: "HVAC Systems Builder",
-      description: "Design and build a complete smart building HVAC system with climate control components.",
+      description: "Build a complete HVAC system by placing 7 components in the correct sequence.",
       icon: "welcome",
     },
     {
       id: "step1",
       title: "Step 1: Install Components",
-      description: "Drag HVAC components into the correct slots.",
+      description: "Drag and drop all 7 HVAC components into their correct positions.",
       icon: "building",
     },
     {
       id: "step2",
-      title: "Step 2: Watch Temperature Drop",
-      description: "As you place components correctly, watch the room temperature drop from 82°F towards the target 68°F.",
+      title: "Step 2: Monitor Temperature",
+      description: "Watch the room temperature as you place components correctly.",
       icon: "temperature",
     },
     {
       id: "step3",
       title: "Step 3: Complete the System",
-      description: "Finish building the full HVAC chain to achieve optimal cooling performance.",
+      description: "Place all components within the time limit to finish the HVAC chain.",
       icon: "components",
     },
     {
       id: "step4",
       title: "Step 4: Get Your Score",
-      description: "Receive a detailed breakdown of your performance with expert feedback. Good luck!",
+      description: "View your final score based on placement accuracy and time taken.",
       icon: "start",
     },
   ];

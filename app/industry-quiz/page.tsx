@@ -119,6 +119,19 @@ export default function IndustryQuizPage() {
       // Calculate insights and log results
       const insights = calculateInsights();
       
+      // Build final answers array including current answer
+      const finalAnswers = [...answers, {
+        questionId: currentQuestion?._id,
+        category: currentQuestion?.category,
+        selectedOption,
+        isCorrect: selectedOption === currentQuestion?.correct,
+      }];
+      
+      // Calculate correct answers count
+      const correctAnswers = finalAnswers.filter(a => a.isCorrect).length;
+      const totalQuestions = finalAnswers.length;
+      const scoreOutOf10 = Math.round((correctAnswers / totalQuestions) * 10);
+      
       // Log anonymized results to MongoDB
       try {
         await fetch("/api/industry-quiz/results", {
@@ -126,17 +139,35 @@ export default function IndustryQuizPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             insights,
-            answers: [...answers, {
-              questionId: currentQuestion?._id,
-              category: currentQuestion?.category,
-              selectedOption,
-              isCorrect: selectedOption === currentQuestion?.correct,
-            }],
+            answers: finalAnswers,
             timestamp: new Date().toISOString(),
           }),
         });
       } catch (error) {
         console.error("Failed to log results:", error);
+      }
+      
+      // Save quiz score to user record
+      try {
+        const sessionId = typeof window !== "undefined" 
+          ? sessionStorage.getItem("genesisSessionId") 
+          : null;
+        
+        if (sessionId) {
+          await fetch("/api/user/quiz-score", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId,
+              score: scoreOutOf10,
+              totalQuestions,
+              correctAnswers,
+              insights,
+            }),
+          });
+        }
+      } catch (error) {
+        console.error("Failed to save quiz score to user:", error);
       }
       
       // Navigate to quiz complete page

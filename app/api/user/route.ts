@@ -33,6 +33,10 @@ export async function GET(request: Request) {
           bestScore: 1,
           lastScore: 1,
           attemptCount: 1,
+          industryQuizScore: 1,
+          industryQuizCorrectAnswers: 1,
+          industryQuizTotalQuestions: 1,
+          industryQuizCompletedAt: 1,
           createdAt: 1,
           updatedAt: 1,
         },
@@ -57,6 +61,10 @@ export async function GET(request: Request) {
         bestScore: user.bestScore,
         lastScore: user.lastScore,
         attemptCount: user.attemptCount,
+        industryQuizScore: user.industryQuizScore,
+        industryQuizCorrectAnswers: user.industryQuizCorrectAnswers,
+        industryQuizTotalQuestions: user.industryQuizTotalQuestions,
+        industryQuizCompletedAt: user.industryQuizCompletedAt,
       },
     });
   } catch (error) {

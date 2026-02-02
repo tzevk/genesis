@@ -403,31 +403,31 @@ export default function Process2DCanvas({
     {
       id: "welcome",
       title: "Distillation Process",
-      description: "Build a complete crude oil distillation system to separate petroleum fractions efficiently.",
+      description: "Build a complete distillation system by placing 5 components in the correct sequence.",
       icon: "welcome",
     },
     {
       id: "step1",
       title: "Step 1: Install Equipment",
-      description: "Place the distillation column, condenser, reflux drum, pump, and reboiler in sequence.",
+      description: "Drag and drop all 5 process components into their correct positions.",
       icon: "building",
     },
     {
       id: "step2",
       title: "Step 2: Start Operation",
-      description: "Once equipment is installed, start the distillation process to begin separation.",
+      description: "Click 'Start Process' once all equipment is placed correctly.",
       icon: "components",
     },
     {
       id: "step3",
       title: "Step 3-4: Handle Upsets",
-      description: "Respond to process upsets: pressure drops, flooding, off-spec products, and fouling.",
+      description: "Respond to process alerts by selecting the correct action when prompted.",
       icon: "events",
     },
     {
       id: "step5",
       title: "Step 5: Get Your Score",
-      description: "Receive performance assessment based on installation, timing, and upset response.",
+      description: "View your final score based on placement accuracy, time, and event responses.",
       icon: "start",
     },
   ], []);

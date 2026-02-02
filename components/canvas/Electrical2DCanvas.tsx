@@ -356,31 +356,31 @@ export default function Electrical2DCanvas({
     {
       id: "welcome",
       title: "Power Quality Optimizer",
-      description: "Design an electrical system that maintains Power Factor ≥ 0.95 while minimizing energy losses.",
+      description: "Build an electrical distribution system by placing 6 components in the correct sequence.",
       icon: "welcome",
     },
     {
       id: "step1",
       title: "Step 1: Install Components",
-      description: "Place the transformer, industrial loads, and power quality equipment in the correct sequence.",
+      description: "Drag and drop all 6 electrical components into their correct positions.",
       icon: "building",
     },
     {
       id: "step2",
       title: "Step 2: Start Simulation",
-      description: "Once all components are placed, energize the system to test power quality.",
+      description: "Click 'Energize System' once all components are placed correctly.",
       icon: "components",
     },
     {
       id: "step3",
       title: "Step 3-4: Handle Events",
-      description: "Respond to power quality events: PF drops, harmonic spikes, and demand peaks.",
+      description: "Respond to power quality alerts by selecting the correct action when prompted.",
       icon: "events",
     },
     {
       id: "step5",
       title: "Step 5: Get Your Score",
-      description: "Receive a detailed power quality assessment with expert feedback. Target PF: 0.95+",
+      description: "View your final score based on placement accuracy, time, and event responses.",
       icon: "start",
     },
   ], []);

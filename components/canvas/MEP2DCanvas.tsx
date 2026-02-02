@@ -360,31 +360,31 @@ export function MEP2DCanvas({
     {
       id: "welcome",
       title: "Water Tank Filling System",
-      description: "Build a complete water tank filling mechanism with pump, pipeline, and level monitoring.",
+      description: "Build a complete water distribution system by placing 6 components in the correct sequence.",
       icon: "welcome",
     },
     {
       id: "step1",
       title: "Step 1: Install Components",
-      description: "Drag components in order.",
+      description: "Drag and drop all 6 MEP components into their correct positions.",
       icon: "building",
     },
     {
       id: "step2",
       title: "Step 2: Start Simulation",
-      description: "Once all components are placed, start the water filling simulation.",
+      description: "Click 'Start Simulation' once all components are placed correctly.",
       icon: "components",
     },
     {
       id: "step3",
       title: "Step 3-4: Handle Events",
-      description: "Monitor water levels and respond to system events like pump failures or leaks.",
+      description: "Respond to system alerts by selecting the correct action when prompted.",
       icon: "events",
     },
     {
       id: "step5",
       title: "Step 5: Get Your Score",
-      description: "Receive a detailed breakdown of your performance with expert feedback. Good luck!",
+      description: "View your final score based on placement accuracy, time, and event responses.",
       icon: "start",
     },
   ];

@@ -9,12 +9,21 @@ const BRAND = {
   yellow: "#FAE452",
   white: "#FFFFFF",
   dark: "#0a0a1a",
+  green: "#22C55E",
 };
 
 interface ThankYouPhotoboothProps {
   userName: string;
   educationLevel?: string;
   nextRedirect?: string;
+}
+
+// Scholarship discount based on score (out of 10)
+function getScholarshipDiscount(scoreOutOf10: number): { percentage: number; eligible: boolean; message: string } {
+  if (scoreOutOf10 >= 9) return { percentage: 5, eligible: true, message: "Outstanding Performance!" };
+  if (scoreOutOf10 >= 8) return { percentage: 3, eligible: true, message: "Excellent Work!" };
+  if (scoreOutOf10 >= 7) return { percentage: 2, eligible: true, message: "Great Job!" };
+  return { percentage: 0, eligible: false, message: "" };
 }
 
 // Pre-generate confetti positions
@@ -37,6 +46,8 @@ export function ThankYouPhotobooth({ userName, educationLevel, nextRedirect = "/
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [flash, setFlash] = useState(false);
   const [userCount, setUserCount] = useState<number | null>(null);
+  const [quizScore, setQuizScore] = useState<number | null>(null);
+  const [scholarship, setScholarship] = useState<{ percentage: number; eligible: boolean; message: string } | null>(null);
 
   // Initialize camera
   useEffect(() => {
@@ -88,6 +99,27 @@ export function ThankYouPhotobooth({ userName, educationLevel, nextRedirect = "/
       }
     };
     fetchUserCount();
+    
+    // Fetch quiz score
+    const fetchQuizScore = async () => {
+      try {
+        const sessionId = typeof window !== "undefined" 
+          ? sessionStorage.getItem("genesisSessionId") 
+          : null;
+        
+        if (sessionId) {
+          const response = await fetch(`/api/user/quiz-score?sessionId=${encodeURIComponent(sessionId)}`);
+          const data = await response.json();
+          if (data.success && data.quizScore !== null) {
+            setQuizScore(data.quizScore);
+            setScholarship(getScholarshipDiscount(data.quizScore));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch quiz score:', error);
+      }
+    };
+    fetchQuizScore();
     
     const timer = setTimeout(() => setShowContent(true), 500);
     return () => clearTimeout(timer);
@@ -353,6 +385,71 @@ export function ThankYouPhotobooth({ userName, educationLevel, nextRedirect = "/
                     {userCount} {userCount === 1 ? 'visitor' : 'visitors'}
                   </span>
                 </div>
+              </motion.div>
+            )}
+            
+            {/* Quiz Score & Scholarship Discount */}
+            {quizScore !== null && (
+              <motion.div
+                className="mt-3 flex flex-col items-center gap-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                {/* Score Display */}
+                <div
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl"
+                  style={{
+                    background: `${BRAND.blue}20`,
+                    border: `1px solid ${BRAND.blue}40`,
+                  }}
+                >
+                  <span className="text-xs" style={{ color: `${BRAND.white}70` }}>Quiz Score:</span>
+                  <span className="text-lg font-bold" style={{ color: BRAND.yellow }}>{quizScore}</span>
+                  <span className="text-xs" style={{ color: `${BRAND.white}50` }}>/10</span>
+                </div>
+                
+                {/* Scholarship Discount */}
+                {scholarship?.eligible && (
+                  <motion.div
+                    className="flex flex-col items-center gap-1 px-4 py-2 rounded-xl"
+                    style={{
+                      background: `${BRAND.green}15`,
+                      border: `1px solid ${BRAND.green}40`,
+                    }}
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.7, type: "spring" }}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={BRAND.green} strokeWidth="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                      </svg>
+                      <span className="text-xs font-medium" style={{ color: BRAND.green }}>
+                        {scholarship.message}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-bold" style={{ color: BRAND.green }}>
+                        {scholarship.percentage}%
+                      </span>
+                      <span className="text-[10px]" style={{ color: `${BRAND.white}60` }}>
+                        Scholarship Discount
+                      </span>
+                    </div>
+                    <p className="text-[9px] text-center" style={{ color: `${BRAND.white}50` }}>
+                      Show this to claim your discount!
+                    </p>
+                  </motion.div>
+                )}
+                
+                {/* No scholarship message */}
+                {scholarship && !scholarship.eligible && quizScore < 7 && (
+                  <p className="text-[10px] text-center" style={{ color: `${BRAND.white}40` }}>
+                    Score 7+ to unlock scholarship discounts
+                  </p>
+                )}
               </motion.div>
             )}
           </motion.div>

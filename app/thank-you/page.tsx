@@ -38,6 +38,12 @@ interface UserScore {
   sector: string;
 }
 
+interface QuizScoreData {
+  quizScore: number | null;
+  correctAnswers: number | null;
+  totalQuestions: number | null;
+}
+
 // Pre-computed particle positions
 const PARTICLES = [
   { width: 4, height: 4, left: 10, top: 20, duration: 3.5, delay: 0.2 },
@@ -83,16 +89,17 @@ const SECTOR_NAMES: Record<string, string> = {
 };
 
 // Scholarship discount based on score (out of 10)
-function getScholarshipDiscount(scoreOutOf10: number): { percentage: number; eligible: boolean } {
-  if (scoreOutOf10 >= 9) return { percentage: 5, eligible: true };
-  if (scoreOutOf10 >= 8) return { percentage: 3, eligible: true };
-  if (scoreOutOf10 >= 7) return { percentage: 2, eligible: true };
-  return { percentage: 0, eligible: false };
+function getScholarshipDiscount(scoreOutOf10: number): { percentage: number; eligible: boolean; message: string } {
+  if (scoreOutOf10 >= 9) return { percentage: 5, eligible: true, message: "Outstanding Performance!" };
+  if (scoreOutOf10 >= 8) return { percentage: 3, eligible: true, message: "Excellent Work!" };
+  if (scoreOutOf10 >= 7) return { percentage: 2, eligible: true, message: "Great Job!" };
+  return { percentage: 0, eligible: false, message: "" };
 }
 
 export default function ThankYouPage() {
   const router = useRouter();
   const [userScore, setUserScore] = useState<UserScore | null>(null);
+  const [quizScore, setQuizScore] = useState<QuizScoreData | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState<number | null>(null);
@@ -131,6 +138,34 @@ export default function ThankYouPage() {
           const scoreOutOf10 = Math.round((userData.bestScore || 0) / 10);
           if (scoreOutOf10 >= 7) {
             setConfetti(generateConfetti());
+          }
+        }
+
+        // Fetch quiz score
+        const sessionId = typeof window !== "undefined" 
+          ? sessionStorage.getItem("genesisSessionId") 
+          : null;
+        
+        if (sessionId) {
+          try {
+            const quizResponse = await fetch(`/api/user/quiz-score?sessionId=${encodeURIComponent(sessionId)}`);
+            if (quizResponse.ok) {
+              const quizData = await quizResponse.json();
+              if (quizData.success) {
+                setQuizScore({
+                  quizScore: quizData.quizScore,
+                  correctAnswers: quizData.correctAnswers,
+                  totalQuestions: quizData.totalQuestions,
+                });
+                
+                // Also generate confetti for quiz scholarship
+                if (quizData.quizScore >= 7 && confetti.length === 0) {
+                  setConfetti(generateConfetti());
+                }
+              }
+            }
+          } catch (error) {
+            console.error("Failed to fetch quiz score:", error);
           }
         }
 
@@ -327,7 +362,7 @@ export default function ThankYouPage() {
         )}
 
         {/* Scholarship Award Section - Only shown for eligible users */}
-        {userScore && getScholarshipDiscount(Math.round(userScore.bestScore / 10)).eligible && (
+        {quizScore?.quizScore !== null && quizScore?.quizScore !== undefined && getScholarshipDiscount(quizScore.quizScore).eligible && (
           <motion.div
             className="mb-3 xs:mb-4 p-4 xs:p-5 rounded-xl text-center relative overflow-hidden"
             style={{
@@ -360,15 +395,51 @@ export default function ThankYouPage() {
               </motion.div>
               <div>
                 <p className="text-sm xs:text-base font-bold" style={{ color: BRAND.yellow }}>
-                  Congratulations!
+                  {getScholarshipDiscount(quizScore.quizScore).message}
                 </p>
                 <p className="text-xl xs:text-2xl font-bold" style={{ color: BRAND.white }}>
-                  {getScholarshipDiscount(Math.round(userScore.bestScore / 10)).percentage}% Scholarship
+                  {getScholarshipDiscount(quizScore.quizScore).percentage}% Scholarship Discount
                 </p>
                 <p className="text-xs xs:text-sm" style={{ color: `${BRAND.white}80` }}>
                   at <span style={{ color: BRAND.yellow }}>Suvidya Institute of Technology</span>
                 </p>
+                <p className="text-[10px] xs:text-xs mt-1" style={{ color: `${BRAND.white}50` }}>
+                  Quiz Score: {quizScore.quizScore}/10
+                </p>
               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Quiz Score Display - When not eligible for scholarship */}
+        {quizScore?.quizScore !== null && quizScore?.quizScore !== undefined && !getScholarshipDiscount(quizScore.quizScore).eligible && (
+          <motion.div
+            className="mb-3 xs:mb-4 p-3 xs:p-4 rounded-xl"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.blue}15, ${BRAND.indigo}30)`,
+              border: `1px solid ${BRAND.blue}25`,
+            }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div>
+                  <p className="text-[10px] xs:text-xs mb-0.5" style={{ color: `${BRAND.white}60` }}>
+                    Quiz Score
+                  </p>
+                  <p className="text-lg xs:text-xl font-bold" style={{ color: BRAND.yellow }}>
+                    {quizScore.quizScore}
+                    <span className="text-[10px] xs:text-xs font-normal" style={{ color: `${BRAND.white}50` }}>
+                      /10
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <p className="text-[10px] xs:text-xs" style={{ color: `${BRAND.white}40` }}>
+                Score 7+ to unlock scholarship discounts
+              </p>
             </div>
           </motion.div>
         )}
